@@ -7,6 +7,10 @@
       <h2>Inscription</h2>
     </div>
 
+    <div *ngIf="error$ | async as error" class="alert alert-danger">
+      {{ error }}
+    </div>
+
     <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="row g-2">
       <div class="col-6">
         <label for="firstName" class="form-label">Prénom</label>
@@ -77,8 +81,10 @@
       </div>
 
       <div class="col-12 mt-3">
-        <button type="submit" class="btn btn-primary w-100" [disabled]="signupForm.invalid">
-          S'inscrire
+        <button type="submit" class="btn btn-primary w-100" 
+                [disabled]="signupForm.invalid || (loading$ | async)">
+          <span *ngIf="loading$ | async">Chargement...</span>
+          <span *ngIf="!(loading$ | async)">S'inscrire</span>
         </button>
       </div>
     </form>

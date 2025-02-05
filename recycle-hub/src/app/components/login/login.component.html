@@ -7,6 +7,10 @@
       <h2>Connexion</h2>
     </div>
 
+    <div *ngIf="error$ | async as error" class="alert alert-danger">
+      {{ error }}
+    </div>
+
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <div class="mb-3">
         <label for="email" class="form-label">Email</label>
@@ -42,8 +46,10 @@
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary w-100" [disabled]="loginForm.invalid">
-        Se connecter
+      <button type="submit" class="btn btn-primary w-100" 
+              [disabled]="loginForm.invalid || (loading$ | async)">
+        <span *ngIf="loading$ | async">Chargement...</span>
+        <span *ngIf="!(loading$ | async)">Se connecter</span>
       </button>
     </form>
   </div>

@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { Store } from '@ngrx/store';
+import * as AuthActions from '../../store/auth/auth.actions';
+import { selectAuthError, selectAuthLoading } from '../../store/auth/auth.selectors';
 
 @Component({
   selector: 'app-login',
@@ -13,12 +14,12 @@ import { AuthService } from '../../services/auth.service';
 })
 export class LoginComponent {
   loginForm: FormGroup;
-  errorMessage: string = '';
+  loading$ = this.store.select(selectAuthLoading);
+  error$ = this.store.select(selectAuthError);
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router
+    private store: Store
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -29,14 +30,7 @@ export class LoginComponent {
   onSubmit() {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
-      this.authService.login(email, password).subscribe({
-        next: () => {
-          this.router.navigate(['/home']);
-        },
-        error: (error) => {
-          this.errorMessage = error.message;
-        }
-      });
+      this.store.dispatch(AuthActions.login({ email, password }));
     }
   }
 }

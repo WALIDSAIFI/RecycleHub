@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@ngrx/effects": "^19.0.1",
+    "@ngrx/store": "^19.0.1"
+  }
+}
