@@ -1,0 +1,11 @@
+<div class="home-container">
+  <div class="welcome-section">
+    <h1>Bienvenue sur RecycleHub</h1>
+    <div class="user-info" *ngIf="currentUser">
+      <h2>Bonjour, {{currentUser.firstName}} {{currentUser.lastName}}</h2>
+      <p *ngIf="currentUser.role === 'particular'">
+        Vos points : {{currentUser.points}}
+      </p>
+    </div>
+  </div>
+</div>
