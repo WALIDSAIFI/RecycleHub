@@ -1,21 +1,53 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import * as AuthActions from '../../store/auth/auth.actions';
-import { selectAuthError, selectAuthLoading } from '../../store/auth/auth.selectors';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+  template: `
+    <div class="login-container">
+      <div class="login-card">
+        <h2>Connexion</h2>
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" formControlName="email">
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Mot de passe</label>
+            <input type="password" class="form-control" id="password" formControlName="password">
+          </div>
+          <button type="submit" class="btn btn-primary w-100" [disabled]="loginForm.invalid">
+            Se connecter
+          </button>
+        </form>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .login-container {
+      padding: 2rem;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    .login-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+  `]
 })
 export class LoginComponent {
   loginForm: FormGroup;
-  loading$ = this.store.select(selectAuthLoading);
-  error$ = this.store.select(selectAuthError);
 
   constructor(
     private fb: FormBuilder,

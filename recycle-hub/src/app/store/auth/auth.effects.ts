@@ -53,7 +53,7 @@ export class AuthEffects {
   );
 
   constructor(
-    private actions$: Actions,
+    private readonly actions$: Actions,
     private authService: AuthService,
     private router: Router
   ) {}

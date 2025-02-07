@@ -7,7 +7,7 @@
       <h2>Inscription</h2>
     </div>
 
-    <div *ngIf="error$ | async as error" class="alert alert-danger">
+    <div *ngIf="error$ | async as error" class="error-message">
       {{ error }}
     </div>
 
@@ -77,7 +77,11 @@
 
       <div class="col-12">
         <label for="profileImage" class="form-label">Photo de profil (optionnel)</label>
-        <input type="file" class="form-control" id="profileImage" formControlName="profileImage" accept="image/*">
+        <input type="file" 
+               class="form-control" 
+               id="profileImage" 
+               (change)="onFileSelected($event)" 
+               accept="image/*">
       </div>
 
       <div class="col-12 mt-3">

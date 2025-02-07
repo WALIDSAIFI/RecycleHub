@@ -9,7 +9,7 @@ export interface User {
   postalCode: string;
   phone: string;
   birthDate: string;
-  profileImage?: string;
-  role: 'particular' | 'collector';
+  profileImage?: string | null;
+  role: 'USER' | 'ADMIN'; // ou d'autres rôles selon vos besoins
   points?: number;
 } 

@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { User } from './auth.model';
+import { User } from '../../models/user.model';
 
 // Login Actions
 export const login = createAction(
@@ -20,7 +20,7 @@ export const loginFailure = createAction(
 // Register Actions
 export const register = createAction(
   '[Auth] Register',
-  props<{ user: Partial<User>; password: string }>()
+  props<{ user: Omit<User, 'id'>, password: string }>()
 );
 
 export const registerSuccess = createAction(

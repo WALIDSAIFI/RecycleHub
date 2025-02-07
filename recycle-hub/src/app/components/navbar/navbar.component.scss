@@ -1,42 +1,336 @@
 .navbar {
   background-color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  padding: 1rem 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 0.75rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .navbar-brand {
-  font-weight: 600;
-  font-size: 1.5rem;
+  font-weight: 700;
+  font-size: 1.6rem;
   color: #2c3e50;
   text-decoration: none;
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: scale(1.02);
+  }
   
   .recycling-icon {
-    width: 32px;
-    height: 32px;
+    width: 35px;
+    height: 35px;
     color: #2ecc71;
+    filter: drop-shadow(0 2px 4px rgba(46, 204, 113, 0.2));
   }
   
   .brand-text {
-    background: linear-gradient(45deg, #2ecc71, #27ae60);
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
   }
 }
 
 .nav-link {
   font-weight: 500;
   color: #34495e;
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.2rem;
   border-radius: 8px;
   transition: all 0.3s ease;
+  margin: 0 0.3rem;
   
   .login-icon {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
+    transition: transform 0.3s ease;
   }
   
   &:hover {
     background-color: #f8f9fa;
     color: #2ecc71;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(46, 204, 113, 0.1);
+    
+    .login-icon {
+      transform: scale(1.1);
+    }
+  }
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  
+  .user-name {
+    font-weight: 600;
+    color: #2c3e50;
+  }
+  
+  .user-points {
+    font-size: 0.9rem;
+    color: #27ae60;
+  }
+}
+
+.logout-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.btn-outline-danger {
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.profile-image-container {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border: 3px solid #2ecc71;
+  box-shadow: 0 2px 8px rgba(46, 204, 113, 0.2);
+  transition: transform 0.3s ease;
+  cursor: pointer;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+  
+  &.active {
+    border-color: #27ae60;
+    transform: scale(1.05);
+  }
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.default-profile-icon {
+  width: 28px;
+  height: 28px;
+  color: #27ae60;
+  opacity: 0.8;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  margin-left: 1rem;
+}
+
+.user-info {
+  background: linear-gradient(to right, rgba(255,255,255,0.8), rgba(255,255,255,0));
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(46, 204, 113, 0.05);
+  }
+  
+  .user-name {
+    font-weight: 600;
+    color: #2c3e50;
+    line-height: 1.2;
+    font-size: 1.1rem;
+  }
+  
+  .user-points {
+    font-size: 0.9rem;
+    color: #27ae60;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    
+    &::before {
+      content: "🌟";
+      font-size: 0.8rem;
+    }
+  }
+}
+
+.btn-outline-danger {
+  height: 42px;
+  padding: 0 1.2rem;
+  border-radius: 8px;
+  border: 2px solid #e74c3c;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  
+  .logout-icon {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+  }
+  
+  &:hover {
+    background-color: #e74c3c;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(231, 76, 60, 0.2);
+    
+    .logout-icon {
+      transform: translateX(2px);
+    }
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// Ajout d'animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.navbar-nav {
+  animation: fadeIn 0.3s ease-out;
+}
+
+// Media queries pour la responsivité
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0.5rem 0;
+  }
+  
+  .profile-image-container {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .user-details {
+    margin-left: 0.5rem;
+  }
+  
+  .user-info .user-name {
+    font-size: 1rem;
+  }
+}
+
+.profile-dropdown {
+  position: relative;
+}
+
+.profile-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 280px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 1000;
+  
+  .profile-header {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    padding: 1.5rem;
+    text-align: center;
+    
+    h3 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    
+    .email {
+      margin: 0.5rem 0 0;
+      opacity: 0.9;
+      font-size: 0.9rem;
+    }
+  }
+  
+  .profile-info {
+    padding: 1rem;
+    
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #eee;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      .label {
+        color: #666;
+        font-size: 0.9rem;
+      }
+      
+      .value {
+        font-weight: 600;
+        color: #2c3e50;
+      }
+    }
+  }
+  
+  .profile-actions {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    
+    .btn-outline-danger {
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(231, 76, 60, 0.2);
+      }
+    }
+  }
+}
+
+// Animation pour le menu
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.profile-menu {
+  animation: slideIn 0.2s ease-out;
+}
+
+// Media queries
+@media (max-width: 768px) {
+  .profile-menu {
+    width: 260px;
+    right: -10px;
   }
 }

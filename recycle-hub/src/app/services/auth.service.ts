@@ -1,98 +1,105 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { delay, tap } from 'rxjs/operators';
 import { User } from '../models/user.model';
+import { Store } from '@ngrx/store';
+import * as AuthActions from '../store/auth/auth.actions';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  public currentUser$ = this.currentUserSubject.asObservable();
+  private readonly USER_KEY = 'currentUser';
+  private storage: Storage | null = null;
 
-  constructor() {
-    // Charger l'utilisateur depuis localStorage au démarrage
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      this.currentUserSubject.next(JSON.parse(storedUser));
+  constructor(private store: Store) {
+    if (typeof window !== 'undefined') {
+      this.storage = window.localStorage;
+      this.initializeAuthState();
     }
   }
 
-  login(email: string, password: string): Observable<User> {
-    const users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find(u => u.email === email && u.password === password);
-
+  private initializeAuthState() {
+    const user = this.getCurrentUser();
     if (user) {
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      this.currentUserSubject.next(user);
-      return of(user);
+      this.store.dispatch(AuthActions.loginSuccess({ user }));
     }
-    return throwError(() => new Error('Email ou mot de passe incorrect'));
-  }
-
-  register(userData: Omit<User, 'id' | 'role' | 'points'>): Observable<User> {
-    const users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-    
-    // Vérifier si l'email existe déjà
-    if (users.some(u => u.email === userData.email)) {
-      return throwError(() => new Error('Cet email est déjà utilisé'));
-    }
-
-    // Créer un nouvel utilisateur
-    const newUser: User = {
-      ...userData,
-      id: Date.now().toString(),
-      role: 'particular',
-      points: 0
-    };
-
-    // Ajouter à la liste des utilisateurs
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-
-    // Connecter automatiquement
-    localStorage.setItem('currentUser', JSON.stringify(newUser));
-    this.currentUserSubject.next(newUser);
-
-    return of(newUser);
-  }
-
-  logout(): void {
-    localStorage.removeItem('currentUser');
-    this.currentUserSubject.next(null);
-  }
-
-  isLoggedIn(): boolean {
-    return this.currentUserSubject.value !== null;
   }
 
   getCurrentUser(): User | null {
-    return this.currentUserSubject.value;
-  }
-
-  // Ajouter quelques collecteurs par défaut
-  initializeCollectors(): void {
-    const users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-    if (!users.some(u => u.role === 'collector')) {
-      const collectors: User[] = [
-        {
-          id: 'collector1',
-          email: 'collector1@recycleHub.com',
-          password: 'collector123',
-          firstName: 'walid',
-          lastName: 'saifi',
-          address: '123 rue du Recyclage',
-          city: 'Paris',
-          postalCode: '75001',
-          phone: '063255998',
-          birthDate: '1999-07-02',
-          role: 'collector',
-          points: 0
-        },
-        
-      ];
-
-      users.push(...collectors);
-      localStorage.setItem('users', JSON.stringify(users));
+    try {
+      if (!this.storage) return null;
+      const userStr = this.storage.getItem(this.USER_KEY);
+      if (!userStr) return null;
+      return JSON.parse(userStr);
+    } catch {
+      return null;
     }
   }
-} 
+
+  setCurrentUser(user: User): void {
+    try {
+      if (!this.storage) return;
+      this.storage.setItem(this.USER_KEY, JSON.stringify(user));
+    } catch (error) {
+      console.error('Error saving user to localStorage:', error);
+    }
+  }
+
+  removeCurrentUser(): void {
+    try {
+      if (!this.storage) return;
+      this.storage.removeItem(this.USER_KEY);
+    } catch (error) {
+      console.error('Error removing user from localStorage:', error);
+    }
+  }
+
+  isLoggedIn(): boolean {
+    return !!this.getCurrentUser();
+  }
+
+  register(userData: any): Observable<User> {
+    return of({
+      id: 'user-' + Math.random().toString(36).substr(2, 9),
+      email: userData.email,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      address: userData.address,
+      city: userData.city,
+      postalCode: userData.postalCode,
+      phone: userData.phone,
+      birthDate: userData.birthDate,
+      profileImage: userData.profileImage,
+      password: '',
+      role: 'USER'
+    } as User).pipe(
+      delay(1000),
+      tap(user => {
+        this.setCurrentUser(user);
+      })
+    );
+  }
+
+  login(email: string, password: string): Observable<User> {
+    return of({
+      id: 'user-' + Math.random().toString(36).substr(2, 9),
+      email: email,
+      firstName: 'Test',
+      lastName: 'User',
+      address: '',
+      city: '',
+      postalCode: '',
+      phone: '',
+      birthDate: new Date().toISOString().split('T')[0],
+      password: '',
+      role: 'USER',
+      profileImage: null
+    } as User).pipe(
+      delay(1000),
+      tap(user => {
+        this.setCurrentUser(user);
+      })
+    );
+  }
+}

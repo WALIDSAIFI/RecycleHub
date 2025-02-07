@@ -10,6 +10,7 @@
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   text-align: center;
+  margin-bottom: 2rem;
 
   h1 {
     color: #2c3e50;
@@ -26,5 +27,116 @@
       font-size: 1.2rem;
       color: #34495e;
     }
+  }
+}
+
+.collectes-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+  h2 {
+    color: #2c3e50;
+    margin: 0;
+  }
+
+  .table {
+    margin-top: 1rem;
+    
+    th {
+      background-color: #f8f9fa;
+      color: #2c3e50;
+    }
+  }
+}
+
+.status-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-waiting {
+  background-color: #f1c40f;
+  color: #fff;
+}
+
+.status-busy {
+  background-color: #e67e22;
+  color: #fff;
+}
+
+.status-progress {
+  background-color: #3498db;
+  color: #fff;
+}
+
+.status-success {
+  background-color: #2ecc71;
+  color: #fff;
+}
+
+.status-rejected {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+.no-collectes {
+  text-align: center;
+  padding: 3rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  
+  p {
+    color: #7f8c8d;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 2rem;
+  color: #7f8c8d;
+}
+
+.btn-primary {
+  background: #2ecc71;
+  border-color: #27ae60;
+  
+  &:hover {
+    background: #27ae60;
+    border-color: #219a52;
+  }
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  
+  i {
+    font-size: 1rem;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    transition: transform 0.2s;
+  }
+}
+
+.btn-outline-primary {
+  &:hover {
+    background-color: #2ecc71;
+    border-color: #27ae60;
+    color: white;
+  }
+}
+
+.btn-outline-danger {
+  &:hover {
+    background-color: #e74c3c;
+    border-color: #c0392b;
+    color: white;
   }
 }

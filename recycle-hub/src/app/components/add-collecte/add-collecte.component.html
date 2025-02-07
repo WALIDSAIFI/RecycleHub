@@ -1,0 +1,100 @@
+<div class="collecte-container">
+  <div class="collecte-card">
+    <h2>Nouvelle demande de collecte</h2>
+
+    <div *ngIf="error" class="alert alert-danger">
+      {{ error }}
+    </div>
+
+    <form [formGroup]="collecteForm" (ngSubmit)="onSubmit()" class="collecte-form">
+      <!-- Déchet unique -->
+      <div class="dechet-item">
+        <div class="row">
+          <div class="col-md-6">
+            <label class="form-label">Type de déchet</label>
+            <select class="form-select" formControlName="type">
+              <option value="">Sélectionnez un type</option>
+              <option *ngFor="let type of typeDechets" [value]="type">
+                {{type}}
+              </option>
+            </select>
+          </div>
+          
+          <div class="col-md-6">
+            <label class="form-label">Poids (en grammes)</label>
+            <input type="number" class="form-control" formControlName="poids" 
+                   min="1000" max="10000">
+            <small class="text-muted d-block mt-1">
+              Entre 1kg et 10kg
+            </small>
+            <div class="invalid-feedback" *ngIf="collecteForm.get('poids')?.errors?.['max']">
+              Le poids ne doit pas dépasser 10kg
+            </div>
+            <div class="invalid-feedback" *ngIf="collecteForm.get('poids')?.errors?.['min']">
+              Le poids minimum est de 1kg
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Photos -->
+      <div class="mb-3 mt-4">
+        <label class="form-label">Photos (optionnel)</label>
+        <input type="file" class="form-control" (change)="onPhotoSelected($event)" 
+               accept="image/*" multiple>
+        
+        <div class="selected-photos" *ngIf="selectedPhotos.length > 0">
+          <div *ngFor="let photo of selectedPhotos; let i=index" class="photo-preview">
+            <img [src]="photo" alt="Photo déchet">
+            <button type="button" class="btn btn-sm btn-danger" (click)="removePhoto(i)">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Adresse -->
+      <div class="mb-3">
+        <label class="form-label">Adresse de collecte</label>
+        <input type="text" class="form-control" formControlName="adresse">
+      </div>
+
+      <!-- Date et créneau -->
+      <div class="row">
+        <div class="col-md-6">
+          <label class="form-label">Date de collecte</label>
+          <input type="date" class="form-control" formControlName="dateCollecte"
+                 [min]="minDate">
+        </div>
+        
+        <div class="col-md-6">
+          <label class="form-label">Créneau horaire</label>
+          <select class="form-select" formControlName="creneauHoraire">
+            <option value="">Sélectionnez un créneau</option>
+            <option *ngFor="let creneau of creneauxHoraires" [value]="creneau">
+              {{creneau}}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="mb-3">
+        <label class="form-label">Notes supplémentaires (optionnel)</label>
+        <textarea class="form-control" formControlName="notes" rows="3"></textarea>
+      </div>
+
+      <!-- Poids -->
+      <div class="total-weight mb-3" [ngClass]="{'text-danger': collecteForm.get('poids')?.value > 10000}">
+        Poids : {{ collecteForm.get('poids')?.value || 0 }} grammes
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn btn-primary w-100" 
+              [disabled]="collecteForm.invalid || loading">
+        <span *ngIf="loading">Chargement...</span>
+        <span *ngIf="!loading">Soumettre la demande</span>
+      </button>
+    </form>
+  </div>
+</div>
