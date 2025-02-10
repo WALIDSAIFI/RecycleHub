@@ -104,7 +104,7 @@ export class HomeComponent implements OnInit {
       this.loading = true;
       this.error = null;
       
-      this.collecteService.deleteCollecte(collecteId).subscribe({
+      this.collecteService.deleteCollecte(collecteId, this.isAdmin).subscribe({
         next: () => {
           this.collectes = this.collectes.filter(c => c.id !== collecteId);
           this.loading = false;

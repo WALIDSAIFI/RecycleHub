@@ -1,3 +1,36 @@
+// Styles de base
+.form-input {
+  @apply w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.error-message {
+  @apply text-sm text-red-600;
+}
+
+.btn-primary {
+  @apply w-full flex justify-center items-center px-6 py-3 bg-primary-600 text-white rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-secondary {
+  @apply w-full flex justify-center items-center px-6 py-3 bg-gray-200 text-gray-700 rounded-lg shadow-lg;
+}
+
+.input-icon {
+  @apply absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400;
+}
+
+.input-error {
+  @apply border-red-300;
+}
+
+.error-container {
+  @apply p-4 rounded-lg bg-red-50 border border-red-200;
+}
+
 // Animations
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-20px); }
@@ -51,62 +84,6 @@
   }
 }
 
-// Styles des inputs
-.form-input {
-  position: relative;
-  transition: all 0.3s ease;
-
-  input {
-    background: rgba(243, 244, 246, 0.8);
-    transition: all 0.3s ease;
-    
-    &:focus {
-      background: white;
-      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
-    }
-  }
-
-  .input-icon {
-    transition: all 0.3s ease;
-  }
-
-  &:focus-within {
-    .input-icon {
-      color: #16a34a;
-      transform: scale(1.1);
-    }
-  }
-}
-
-// Styles des boutons
-.btn-primary {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: width 0.6s ease, height 0.6s ease;
-  }
-
-  &:hover::before {
-    width: 300px;
-    height: 300px;
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
-}
-
 // Animation de chargement
 .loading-spinner {
   animation: spin 1s linear infinite;
@@ -125,13 +102,6 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
-}
-
-// Messages d'erreur
-.error-message {
-  animation: slideIn 0.3s ease-out;
-  background: rgba(254, 226, 226, 0.8);
-  backdrop-filter: blur(4px);
 }
 
 // Responsive design
@@ -187,11 +157,6 @@ h2 {
   margin-bottom: 1.5rem;
 }
 
-.form-label {
-  color: #34495e;
-  font-weight: 500;
-}
-
 .form-control {
   border: 2px solid #e9ecef;
   padding: 0.75rem;
@@ -199,21 +164,6 @@ h2 {
   &:focus {
     border-color: #2ecc71;
     box-shadow: 0 0 0 0.2rem rgba(46, 204, 113, 0.25);
-  }
-}
-
-.btn-primary {
-  background: linear-gradient(45deg, #2ecc71, #27ae60);
-  border: none;
-  padding: 0.75rem;
-  font-weight: 500;
-  
-  &:hover {
-    background: linear-gradient(45deg, #27ae60, #219a52);
-  }
-  
-  &:disabled {
-    background: #95a5a6;
   }
 }
 

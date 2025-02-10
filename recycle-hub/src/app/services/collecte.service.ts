@@ -73,7 +73,7 @@ export class CollecteService {
     );
   }
 
-  deleteCollecte(collecteId: string): Observable<void> {
+  deleteCollecte(collecteId: string, isAdmin: boolean = false): Observable<void> {
     return this.getCollecteById(collecteId).pipe(
       switchMap(collecte => 
         this.getUserCollectes(collecte.userId).pipe(
@@ -82,7 +82,7 @@ export class CollecteService {
             if (!collecteTrouvee) {
               throw new Error('Collecte non trouvée');
             }
-            if (collecteTrouvee.statut !== 'EN_ATTENTE') {
+            if (!isAdmin && collecteTrouvee.statut !== 'EN_ATTENTE') {
               throw new Error('Seules les collectes en attente peuvent être supprimées');
             }
           }),

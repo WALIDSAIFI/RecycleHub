@@ -1,22 +1,25 @@
-<div class="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-100 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-  <div class="max-w-md w-full space-y-8">
+<div class="container">
+  <div class="login-card">
     <!-- Logo et titre -->
-    <div class="text-center">
-      <div class="flex justify-center mb-4">
-        <div class="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-xl transform transition-transform duration-300 hover:scale-105 group">
-          <svg class="w-10 h-10 text-white transform transition-transform duration-300 group-hover:rotate-180" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M21.82,15.42L19.32,19.75C18.83,20.61 17.92,21.06 17,21H15V23L12.5,18.5L15,14V16H17.82L15.6,12.15L19.93,9.65L21.73,12.77C22.25,13.54 22.32,14.57 21.82,15.42M9.21,3.06H14.21C15.19,3.06 16.04,3.63 16.45,4.45L17.45,6.19L19.18,5.19L16.54,9.6L11.39,9.69L13.12,8.69L11.71,6.24L9.5,10.09L5.16,7.59L6.96,4.47C7.37,3.64 8.22,3.06 9.21,3.06M5.05,19.76L2.55,15.43C2.06,14.58 2.13,13.56 2.64,12.79L3.64,11.06L1.91,10.06L7.05,10.14L9.7,14.56L7.97,13.56L6.56,16H11V21H7.4C6.47,21.07 5.55,20.61 5.05,19.76Z"/>
-          </svg>
+    <div class="header">
+      <div class="logo">
+        <div class="flex justify-center mb-4">
+          <div class="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-xl transform transition-transform duration-300 hover:scale-105 group">
+            <svg class="w-10 h-10 text-white transform transition-transform duration-300 group-hover:rotate-180" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M21.82,15.42L19.32,19.75C18.83,20.61 17.92,21.06 17,21H15V23L12.5,18.5L15,14V16H17.82L15.6,12.15L19.93,9.65L21.73,12.77C22.25,13.54 22.32,14.57 21.82,15.42M9.21,3.06H14.21C15.19,3.06 16.04,3.63 16.45,4.45L17.45,6.19L19.18,5.19L16.54,9.6L11.39,9.69L13.12,8.69L11.71,6.24L9.5,10.09L5.16,7.59L6.96,4.47C7.37,3.64 8.22,3.06 9.21,3.06M5.05,19.76L2.55,15.43C2.06,14.58 2.13,13.56 2.64,12.79L3.64,11.06L1.91,10.06L7.05,10.14L9.7,14.56L7.97,13.56L6.56,16H11V21H7.4C6.47,21.07 5.55,20.61 5.05,19.76Z"/>
+            </svg>
+          </div>
         </div>
       </div>
-      <h2 class="text-2xl font-semibold text-gray-900 mb-6">Connexion</h2>
+      <h2 class="title">Connexion</h2>
+      <p class="subtitle">Entrez vos identifiants pour vous connecter</p>
     </div>
 
     <!-- Carte du formulaire -->
     <div class="bg-white rounded-3xl shadow-2xl p-8 space-y-6 transform hover:scale-[1.01] transition-all duration-300 backdrop-blur-sm bg-white/90">
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="form">
         <!-- Email -->
-        <div class="space-y-2">
+        <div class="form-group">
           <label for="email" class="block text-sm font-semibold text-gray-700 mb-1.5">
             <span class="flex items-center gap-2">
               <svg class="w-4 h-4 text-primary-500" viewBox="0 0 24 24">
@@ -25,7 +28,7 @@
               Email
             </span>
           </label>
-          <div class="relative group">
+          <div class="input-container">
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <svg class="h-5 w-5 text-gray-400 group-hover:text-primary-500 transition-colors duration-200" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z"/>
@@ -54,7 +57,7 @@
             </div>
           </div>
           <p *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" 
-             class="text-sm text-red-600 flex items-center space-x-1 mt-1.5 ml-1">
+             class="error-text flex items-center space-x-1 mt-1.5 ml-1">
             <svg class="w-4 h-4" viewBox="0 0 24 24">
               <path fill="currentColor" d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
             </svg>
@@ -63,7 +66,7 @@
         </div>
 
         <!-- Mot de passe -->
-        <div class="space-y-2">
+        <div class="form-group">
           <label for="password" class="block text-sm font-semibold text-gray-700 mb-1.5">
             <span class="flex items-center gap-2">
               <svg class="w-4 h-4 text-primary-500" viewBox="0 0 24 24">
@@ -72,7 +75,7 @@
               Mot de passe
             </span>
           </label>
-          <div class="relative group">
+          <div class="input-container">
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <svg class="h-5 w-5 text-gray-400 group-hover:text-primary-500 transition-colors duration-200" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
@@ -112,7 +115,7 @@
             </div>
           </div>
           <p *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" 
-             class="text-sm text-red-600 flex items-center space-x-1 mt-1.5 ml-1">
+             class="error-text flex items-center space-x-1 mt-1.5 ml-1">
             <svg class="w-4 h-4" viewBox="0 0 24 24">
               <path fill="currentColor" d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
             </svg>
@@ -143,12 +146,12 @@
         </button>
 
         <!-- Séparateur -->
-        <div class="relative my-6">
-          <div class="absolute inset-0 flex items-center">
+        <div class="divider">
+          <div class="divider-line">
             <div class="w-full border-t-2 border-gray-200"></div>
           </div>
-          <div class="relative flex justify-center text-sm">
-            <span class="px-4 bg-white text-gray-500">ou</span>
+          <div class="divider-text">
+            <span class="divider-text-bg">ou</span>
           </div>
         </div>
 
