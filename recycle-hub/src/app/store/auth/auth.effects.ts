@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of } from 'rxjs';
-import { map, mergeMap, catchError, tap } from 'rxjs/operators';
+import { map, mergeMap, catchError, tap, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import * as AuthActions from './auth.actions';
+import { User } from '../../models/user.model';
 
 @Injectable()
 export class AuthEffects {
@@ -23,20 +24,9 @@ export class AuthEffects {
   register$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.register),
-      mergeMap(({ user, password }) =>
-        this.authService.register({
-          email: user.email!,
-          firstName: user.firstName!,
-          lastName: user.lastName!,
-          password,
-          address: user.address!,
-          city: user.city!,
-          postalCode: user.postalCode!,
-          phone: user.phone!,
-          birthDate: user.birthDate!,
-          profileImage: user.profileImage
-        }).pipe(
-          map(newUser => AuthActions.registerSuccess({ user: newUser })),
+      switchMap(({ user, password }) => 
+        this.authService.register({ ...user, password }).pipe(
+          map((user: User) => AuthActions.registerSuccess({ user })),
           catchError(error => of(AuthActions.registerFailure({ error: error.message })))
         )
       )
@@ -47,13 +37,15 @@ export class AuthEffects {
     () =>
       this.actions$.pipe(
         ofType(AuthActions.loginSuccess, AuthActions.registerSuccess),
-        tap(() => this.router.navigate(['/home']))
+        tap(({ user }) => {
+          this.router.navigate(['/home']);
+        })
       ),
     { dispatch: false }
   );
 
   constructor(
-    private readonly actions$: Actions,
+    private actions$: Actions,
     private authService: AuthService,
     private router: Router
   ) {}

@@ -80,3 +80,174 @@
 .alert {
   margin-bottom: 1rem;
 }
+
+// Animations
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+// Styles principaux
+:host {
+  display: block;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.container {
+  animation: slideIn 0.5s ease-out;
+}
+
+// Styles des inputs et sélects
+input, select, textarea {
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+  }
+
+  &::placeholder {
+    color: #9CA3AF;
+  }
+
+  &[type="date"] {
+    &::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+// Style des cartes de type de déchet
+.type-card {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  &.selected {
+    border-color: #22C55E;
+    background-color: #F0FDF4;
+  }
+}
+
+// Style de la zone de dépôt des photos
+.photo-dropzone {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: #22C55E;
+    background-color: #F0FDF4;
+  }
+}
+
+// Animation de chargement
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// Effets de survol pour les boutons
+button {
+  transition: all 0.2s ease;
+  
+  &:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  &:not(:disabled):active {
+    transform: translateY(0);
+  }
+}
+
+// Style des messages d'erreur
+.error-message {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+// Style de la grille de photos
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  
+  .photo-item {
+    aspect-ratio: 1;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    
+    &:hover {
+      img {
+        transform: scale(1.05);
+      }
+      
+      .remove-button {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 640px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .photo-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+// Animations pour les validations
+.is-valid {
+  animation: validPulse 0.5s ease-out;
+}
+
+@keyframes validPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+// Style du formulaire en mode loading
+.form-loading {
+  opacity: 0.7;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}

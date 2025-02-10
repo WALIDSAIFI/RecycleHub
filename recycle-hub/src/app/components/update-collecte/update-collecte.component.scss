@@ -18,3 +18,97 @@
 }
 
 // ... reste des styles identiques à add-collecte.component.scss ...
+
+// Animations
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+// Styles principaux
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.container {
+  animation: fadeIn 0.5s ease-out;
+}
+
+// Styles des cartes
+.bg-white {
+  animation: slideIn 0.5s ease-out;
+  transition: all 0.3s ease;
+}
+
+// Style des inputs et labels
+input, select, textarea {
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+}
+
+// Style des boutons radio
+.peer:checked + label {
+  border-color: var(--primary-500);
+  background-color: var(--primary-50);
+}
+
+// Style des photos
+.aspect-square {
+  position: relative;
+  
+  img {
+    transition: transform 0.3s ease;
+  }
+  
+  &:hover img {
+    transform: scale(1.05);
+  }
+}
+
+// Style des boutons
+button {
+  transition: all 0.2s ease;
+  
+  &:not(:disabled):hover {
+    transform: translateY(-1px);
+  }
+  
+  &:not(:disabled):active {
+    transform: translateY(0);
+  }
+  
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+// Style des messages d'erreur
+.text-red-500 {
+  animation: fadeIn 0.3s ease-out;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .grid {
+    gap: 1rem;
+  }
+}
+
+// Hover effects
+.hover\:shadow-xl:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}

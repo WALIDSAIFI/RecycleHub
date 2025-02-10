@@ -140,3 +140,316 @@
     color: white;
   }
 }
+
+// Animations
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+// Styles principaux
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.container {
+  animation: fadeIn 0.5s ease-out;
+}
+
+// Styles des cartes de collecte
+.grid > div {
+  animation: slideIn 0.5s ease-out;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+// Style de l'image
+.h-48 {
+  position: relative;
+  overflow: hidden;
+
+  img {
+    transition: transform 0.3s ease;
+  }
+
+  &:hover img {
+    transform: scale(1.05);
+  }
+}
+
+// Styles des badges de statut
+.rounded-full {
+  transition: all 0.3s ease;
+
+  &.bg-yellow-100 {
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.1);
+  }
+  &.bg-blue-100 {
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  }
+  &.bg-green-100 {
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.1);
+  }
+  &.bg-red-100 {
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+  }
+  &.bg-purple-100 {
+    box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.1);
+  }
+}
+
+// Styles des boutons d'action
+button {
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// Style du message vide
+.text-center {
+  svg {
+    transition: transform 0.3s ease;
+  }
+
+  &:hover svg {
+    transform: rotate(180deg);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .grid {
+    gap: 1rem;
+  }
+
+  .h-48 {
+    height: 200px;
+  }
+}
+
+// Hover effects
+.hover\:shadow-xl:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+// Status colors with gradients
+.status-badge {
+  background: linear-gradient(45deg, var(--start-color), var(--end-color));
+  
+  &.en-attente {
+    --start-color: #fbbf24;
+    --end-color: #f59e0b;
+  }
+  
+  &.en-cours {
+    --start-color: #60a5fa;
+    --end-color: #3b82f6;
+  }
+  
+  &.validee {
+    --start-color: #34d399;
+    --end-color: #10b981;
+  }
+  
+  &.rejetee {
+    --start-color: #f87171;
+    --end-color: #ef4444;
+  }
+  
+  &.occupee {
+    --start-color: #c084fc;
+    --end-color: #a855f7;
+  }
+}
+
+// Styles pour le tableau
+.table-container {
+  @apply bg-white rounded-xl shadow-lg overflow-hidden;
+  animation: fadeIn 0.3s ease-out;
+}
+
+table {
+  @apply w-full border-collapse;
+
+  thead {
+    @apply bg-gradient-to-r from-primary-50 to-primary-100;
+
+    th {
+      @apply px-6 py-4 text-left text-sm font-semibold text-primary-700 uppercase tracking-wider border-b border-primary-200;
+      
+      &:first-child {
+        @apply rounded-tl-xl;
+      }
+      
+      &:last-child {
+        @apply rounded-tr-xl;
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      @apply border-b border-gray-100 hover:bg-primary-50/30 transition-colors duration-200;
+
+      &:last-child {
+        @apply border-none;
+      }
+
+      td {
+        @apply px-6 py-4 whitespace-nowrap text-sm;
+
+        // Style pour la colonne de date
+        &:first-child {
+          .date {
+            @apply font-medium text-gray-900;
+          }
+          .time {
+            @apply text-sm text-gray-500;
+          }
+        }
+
+        // Style pour le type de déchet
+        &:nth-child(2) {
+          @apply font-medium text-primary-600;
+        }
+
+        // Style pour le poids
+        &:nth-child(3) {
+          @apply text-gray-700;
+        }
+
+        // Style pour l'adresse
+        &:nth-child(4) {
+          @apply text-gray-600 max-w-xs truncate;
+        }
+
+        // Style pour le select du statut
+        select {
+          @apply px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-sm font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200;
+          
+          option {
+            @apply py-1;
+          }
+        }
+
+        // Style pour les actions
+        &:last-child {
+          @apply text-right pr-8;
+          
+          button.delete-btn {
+            @apply inline-flex items-center;
+            
+            &:hover {
+              @apply bg-red-50 text-red-700;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Animation d'entrée
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Styles pour les statuts
+.status-badge {
+  @apply px-3 py-1.5 rounded-full text-sm font-medium;
+
+  &.en-attente {
+    @apply bg-yellow-100 text-yellow-700;
+  }
+
+  &.en-cours {
+    @apply bg-blue-100 text-blue-700;
+  }
+
+  &.validee {
+    @apply bg-green-100 text-green-700;
+  }
+
+  &.rejetee {
+    @apply bg-red-100 text-red-700;
+  }
+
+  &.occupee {
+    @apply bg-purple-100 text-purple-700;
+  }
+}
+
+// Style pour le conteneur vide
+.empty-state {
+  @apply text-center py-16 bg-white rounded-xl shadow-lg;
+  animation: fadeIn 0.3s ease-out;
+
+  svg {
+    @apply w-20 h-20 mx-auto text-primary-300 mb-4;
+  }
+
+  h3 {
+    @apply text-xl font-semibold text-gray-900 mb-2;
+  }
+
+  p {
+    @apply text-gray-500 mb-8;
+  }
+
+  button {
+    @apply inline-flex items-center px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all duration-200 transform hover:scale-105;
+
+    svg {
+      @apply w-5 h-5 mr-2 text-white mb-0;
+    }
+  }
+}
+
+// Style spécifique pour le bouton de suppression
+.delete-btn {
+  @apply font-medium;
+  
+  &:hover {
+    @apply bg-red-50;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  svg {
+    @apply transition-transform duration-200;
+  }
+
+  &:hover svg {
+    transform: scale(1.1);
+  }
+
+  span {
+    @apply font-medium;
+  }
+}

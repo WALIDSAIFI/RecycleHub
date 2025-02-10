@@ -1,56 +1,168 @@
-<div class="login-container">
-  <div class="login-card">
-    <div class="text-center mb-4">
-      <svg class="recycling-icon" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M21.82,15.42L19.32,19.75C18.83,20.61 17.92,21.06 17,21H15V23L12.5,18.5L15,14V16H17.82L15.6,12.15L19.93,9.65L21.73,12.77C22.25,13.54 22.32,14.57 21.82,15.42M9.21,3.06H14.21C15.19,3.06 16.04,3.63 16.45,4.45L17.45,6.19L19.18,5.19L16.54,9.6L11.39,9.69L13.12,8.69L11.71,6.24L9.5,10.09L5.16,7.59L6.96,4.47C7.37,3.64 8.22,3.06 9.21,3.06M5.05,19.76L2.55,15.43C2.06,14.58 2.13,13.56 2.64,12.79L3.64,11.06L1.91,10.06L7.05,10.14L9.7,14.56L7.97,13.56L6.56,16H11V21H7.4C6.47,21.07 5.55,20.61 5.05,19.76Z"/>
-      </svg>
-      <h2>Connexion</h2>
-    </div>
-
-    <div *ngIf="error$ | async as error" class="alert alert-danger">
-      {{ error }}
-    </div>
-
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input 
-          type="email" 
-          class="form-control" 
-          id="email" 
-          formControlName="email"
-          [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
-        >
-        <div class="invalid-feedback" *ngIf="loginForm.get('email')?.errors?.['required']">
-          L'email est requis
-        </div>
-        <div class="invalid-feedback" *ngIf="loginForm.get('email')?.errors?.['email']">
-          Format d'email invalide
+<div class="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-100 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+  <div class="max-w-md w-full space-y-8">
+    <!-- Logo et titre -->
+    <div class="text-center">
+      <div class="flex justify-center mb-4">
+        <div class="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-xl transform transition-transform duration-300 hover:scale-105 group">
+          <svg class="w-10 h-10 text-white transform transition-transform duration-300 group-hover:rotate-180" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M21.82,15.42L19.32,19.75C18.83,20.61 17.92,21.06 17,21H15V23L12.5,18.5L15,14V16H17.82L15.6,12.15L19.93,9.65L21.73,12.77C22.25,13.54 22.32,14.57 21.82,15.42M9.21,3.06H14.21C15.19,3.06 16.04,3.63 16.45,4.45L17.45,6.19L19.18,5.19L16.54,9.6L11.39,9.69L13.12,8.69L11.71,6.24L9.5,10.09L5.16,7.59L6.96,4.47C7.37,3.64 8.22,3.06 9.21,3.06M5.05,19.76L2.55,15.43C2.06,14.58 2.13,13.56 2.64,12.79L3.64,11.06L1.91,10.06L7.05,10.14L9.7,14.56L7.97,13.56L6.56,16H11V21H7.4C6.47,21.07 5.55,20.61 5.05,19.76Z"/>
+          </svg>
         </div>
       </div>
+      <h2 class="text-2xl font-semibold text-gray-900 mb-6">Connexion</h2>
+    </div>
 
-      <div class="mb-3">
-        <label for="password" class="form-label">Mot de passe</label>
-        <input 
-          type="password" 
-          class="form-control" 
-          id="password" 
-          formControlName="password"
-          [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
-        >
-        <div class="invalid-feedback" *ngIf="loginForm.get('password')?.errors?.['required']">
-          Le mot de passe est requis
+    <!-- Carte du formulaire -->
+    <div class="bg-white rounded-3xl shadow-2xl p-8 space-y-6 transform hover:scale-[1.01] transition-all duration-300 backdrop-blur-sm bg-white/90">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <!-- Email -->
+        <div class="space-y-2">
+          <label for="email" class="block text-sm font-semibold text-gray-700 mb-1.5">
+            <span class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-primary-500" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z"/>
+              </svg>
+              Email
+            </span>
+          </label>
+          <div class="relative group">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <svg class="h-5 w-5 text-gray-400 group-hover:text-primary-500 transition-colors duration-200" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z"/>
+              </svg>
+            </div>
+            <input type="email"
+                   id="email"
+                   formControlName="email"
+                   class="pl-12 w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 bg-gray-50/50 focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 placeholder-gray-400"
+                   [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-100': loginForm.get('email')?.invalid && loginForm.get('email')?.touched}"
+                   placeholder="vous@exemple.com">
+            <div class="absolute inset-y-0 right-0 pr-4 flex items-center">
+              <div *ngIf="loginForm.get('email')?.value" 
+                   (click)="loginForm.get('email')?.setValue('')"
+                   class="cursor-pointer p-1 hover:bg-gray-100 rounded-full transition-colors duration-200">
+                <svg class="h-5 w-5 text-gray-400 hover:text-gray-600" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                </svg>
+              </div>
+              <div *ngIf="loginForm.get('email')?.valid && loginForm.get('email')?.touched" 
+                   class="ml-1">
+                <svg class="h-5 w-5 text-green-500" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <p *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" 
+             class="text-sm text-red-600 flex items-center space-x-1 mt-1.5 ml-1">
+            <svg class="w-4 h-4" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+            </svg>
+            <span>Veuillez entrer une adresse email valide</span>
+          </p>
         </div>
-        <div class="invalid-feedback" *ngIf="loginForm.get('password')?.errors?.['minlength']">
-          Le mot de passe doit contenir au moins 6 caractères
-        </div>
-      </div>
 
-      <button type="submit" class="btn btn-primary w-100" 
-              [disabled]="loginForm.invalid || (loading$ | async)">
-        <span *ngIf="loading$ | async">Chargement...</span>
-        <span *ngIf="!(loading$ | async)">Se connecter</span>
-      </button>
-    </form>
+        <!-- Mot de passe -->
+        <div class="space-y-2">
+          <label for="password" class="block text-sm font-semibold text-gray-700 mb-1.5">
+            <span class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-primary-500" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
+              </svg>
+              Mot de passe
+            </span>
+          </label>
+          <div class="relative group">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <svg class="h-5 w-5 text-gray-400 group-hover:text-primary-500 transition-colors duration-200" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
+              </svg>
+            </div>
+            <input [type]="showPassword ? 'text' : 'password'"
+                   id="password"
+                   formControlName="password"
+                   class="pl-12 w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 bg-gray-50/50 focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 placeholder-gray-400"
+                   [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-100': loginForm.get('password')?.invalid && loginForm.get('password')?.touched}"
+                   placeholder="••••••••">
+            <div class="absolute inset-y-0 right-0 pr-4 flex items-center space-x-2">
+              <!-- Bouton pour effacer -->
+              <div *ngIf="loginForm.get('password')?.value" 
+                   (click)="loginForm.get('password')?.setValue('')"
+                   class="cursor-pointer p-1 hover:bg-gray-100 rounded-full transition-colors duration-200">
+                <svg class="h-5 w-5 text-gray-400 hover:text-gray-600" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                </svg>
+              </div>
+              <!-- Bouton pour afficher/masquer le mot de passe -->
+              <div (click)="showPassword = !showPassword"
+                   class="cursor-pointer p-1 hover:bg-gray-100 rounded-full transition-colors duration-200">
+                <svg *ngIf="!showPassword" class="h-5 w-5 text-gray-400 hover:text-gray-600" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
+                </svg>
+                <svg *ngIf="showPassword" class="h-5 w-5 text-gray-400 hover:text-gray-600" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M11.83,9L15,12.16C15,12.11 15,12.05 15,12A3,3 0 0,0 12,9C11.94,9 11.89,9 11.83,9M7.53,9.8L9.08,11.35C9.03,11.56 9,11.77 9,12A3,3 0 0,0 12,15C12.22,15 12.44,14.97 12.65,14.92L14.2,16.47C13.53,16.8 12.79,17 12,17A5,5 0 0,1 7,12C7,11.21 7.2,10.47 7.53,9.8M2,4.27L4.28,6.55L4.73,7C3.08,8.3 1.78,10 1,12C2.73,16.39 7,19.5 12,19.5C13.55,19.5 15.03,19.2 16.38,18.66L16.81,19.08L19.73,22L21,20.73L3.27,3M12,7A5,5 0 0,1 17,12C17,12.64 16.87,13.26 16.64,13.82L19.57,16.75C21.07,15.5 22.27,13.86 23,12C21.27,7.61 17,4.5 12,4.5C10.6,4.5 9.26,4.75 8,5.2L10.17,7.35C10.74,7.13 11.35,7 12,7Z"/>
+                </svg>
+              </div>
+              <!-- Icône de validation -->
+              <div *ngIf="loginForm.get('password')?.valid && loginForm.get('password')?.touched">
+                <svg class="h-5 w-5 text-green-500" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <p *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" 
+             class="text-sm text-red-600 flex items-center space-x-1 mt-1.5 ml-1">
+            <svg class="w-4 h-4" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+            </svg>
+            <span>Le mot de passe est requis</span>
+          </p>
+        </div>
+
+        <!-- Message d'erreur -->
+        <div *ngIf="error" 
+             class="p-4 rounded-xl bg-red-50 border-2 border-red-200 flex items-center space-x-3 animate-pulse">
+          <svg class="w-6 h-6 text-red-500 flex-shrink-0" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+          </svg>
+          <p class="text-sm text-red-700 font-medium">{{ error }}</p>
+        </div>
+
+        <!-- Bouton de connexion -->
+        <button type="submit"
+                [disabled]="loginForm.invalid || loading"
+                class="w-full flex justify-center items-center px-6 py-3.5 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] focus:ring-4 focus:ring-primary-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 group">
+          <span *ngIf="loading" class="mr-2">
+            <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </span>
+          <span class="text-lg font-semibold group-hover:scale-105 transition-transform duration-200">Se connecter</span>
+        </button>
+
+        <!-- Séparateur -->
+        <div class="relative my-6">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t-2 border-gray-200"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-4 bg-white text-gray-500">ou</span>
+          </div>
+        </div>
+
+        <!-- Lien d'inscription -->
+        <div class="text-center">
+          <p class="text-base text-gray-600">
+            Pas encore de compte ?
+            <a routerLink="/signup" 
+               class="font-semibold text-primary-600 hover:text-primary-700 transition-colors duration-200 hover:underline">
+              Créer un compte
+            </a>
+          </p>
+        </div>
+      </form>
+    </div>
   </div>
 </div>

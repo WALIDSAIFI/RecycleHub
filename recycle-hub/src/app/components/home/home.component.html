@@ -1,60 +1,65 @@
-<div class="home-container">
-  <div class="collectes-section">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2>Mes demandes de collecte</h2>
-      <button class="btn btn-primary" routerLink="/add-collecte">
-        <i class="fas fa-plus me-2"></i>
-        Nouvelle collecte
+<div class="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-100 py-8">
+  <div class="container mx-auto px-4">
+    <!-- En-tête -->
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-gray-900 mb-4">
+        {{ isAdmin ? 'Gestion des collectes' : 'Mes collectes' }}
+      </h1>
+      <p class="text-lg text-gray-600">
+        {{ isAdmin ? 'Gérez toutes les demandes de collecte' : 'Gérez vos demandes de collecte de déchets' }}
+      </p>
+    </div>
+
+    <!-- Bouton Nouvelle Collecte (uniquement pour les utilisateurs) -->
+    <div *ngIf="!isAdmin" class="mb-6 flex justify-end">
+      <button routerLink="/add-collecte" 
+              class="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200">
+        <svg class="w-5 h-5" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+        </svg>
+        <span>Nouvelle collecte</span>
       </button>
     </div>
 
-    <div class="alert alert-danger" *ngIf="error">
-      {{ error }}
-    </div>
-
-    <div class="loading-spinner" *ngIf="loading">
-      Chargement...
-    </div>
-
-    <div class="table-responsive" *ngIf="!loading && collectes.length > 0">
-      <table class="table table-hover">
+    <!-- Vue Admin -->
+    <div *ngIf="isAdmin" class="table-container">
+      <table>
         <thead>
           <tr>
             <th>Date</th>
-            <th>Créneau</th>
-            <th>Types de déchets</th>
-            <th>Poids total</th>
+            <th>Type</th>
+            <th>Poids</th>
+            <th>Adresse</th>
             <th>Statut</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let collecte of collectes">
-            <td>{{ collecte.dateCollecte | date:'dd/MM/yyyy' }}</td>
-            <td>{{ collecte.creneauHoraire }}</td>
             <td>
-              <span class="badge bg-secondary me-1" *ngFor="let dechet of collecte.dechets">
-                {{ dechet.type }}
-              </span>
+              <div class="date">{{ collecte.dateCollecte | date:'dd/MM/yyyy' }}</div>
+              <div class="time">{{ collecte.creneauHoraire }}</div>
             </td>
-            <td>{{ collecte.poidsTotal }}g</td>
+            <td>{{ collecte.dechets[0].type }}</td>
+            <td>{{ collecte.dechets[0].poids }}g</td>
+            <td>{{ collecte.adresse }}</td>
             <td>
-              <span class="status-badge" [ngClass]="getStatusClass(collecte.statut)">
-                {{ getStatusLabel(collecte.statut) }}
-              </span>
+              <select [value]="collecte.statut"
+                      (change)="onStatusChange($event, collecte.id)">
+                <option value="EN_ATTENTE">En attente</option>
+                <option value="OCCUPEE">Occupée</option>
+                <option value="EN_COURS">En cours</option>
+                <option value="VALIDEE">Validée</option>
+                <option value="REJETEE">Rejetée</option>
+              </select>
             </td>
             <td>
-              <button class="btn btn-sm btn-outline-primary me-2" 
-                      *ngIf="collecte.statut === 'EN_ATTENTE'"
-                      [routerLink]="['/edit-collecte', collecte.id]"
-                      title="Modifier">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button class="btn btn-sm btn-outline-danger"
-                      *ngIf="collecte.statut === 'EN_ATTENTE'"
-                      (click)="onDeleteCollecte(collecte.id)"
-                      title="Supprimer">
-                <i class="fas fa-trash-alt"></i>
+              <button (click)="onDeleteCollecte(collecte.id)"
+                      class="delete-btn flex items-center space-x-2 px-3 py-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-all duration-200">
+                <svg class="w-4 h-4" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                </svg>
+                <span>Supprimer</span>
               </button>
             </td>
           </tr>
@@ -62,10 +67,75 @@
       </table>
     </div>
 
-    <div class="no-collectes" *ngIf="!loading && collectes.length === 0">
-      <p>Vous n'avez pas encore de demandes de collecte.</p>
-      <button class="btn btn-primary" routerLink="/add-collecte">
-        Créer votre première demande
+    <!-- Vue Utilisateur -->
+    <div *ngIf="!isAdmin" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div *ngFor="let collecte of collectes" 
+           class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <!-- Statut -->
+        <div class="p-4 border-b flex justify-between items-center">
+          <span [class]="'status-badge ' + getStatusClass(collecte.statut)">
+            {{ getStatusLabel(collecte.statut) }}
+          </span>
+          <span class="text-sm text-gray-500">
+            {{ collecte.dateCollecte | date:'dd/MM/yyyy' }}
+          </span>
+        </div>
+
+        <!-- Contenu -->
+        <div class="p-4">
+          <div class="flex items-center space-x-4 mb-4">
+            <div class="p-2 bg-primary-50 rounded-lg">
+              <svg class="w-6 h-6 text-primary-500" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold">{{ collecte.dechets[0].type }}</h3>
+              <p class="text-sm text-gray-500">{{ collecte.dechets[0].poids }}g</p>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <p class="text-sm text-gray-600">{{ collecte.adresse }}</p>
+            <p class="text-sm text-gray-600">{{ collecte.creneauHoraire }}</p>
+          </div>
+
+          <!-- Actions -->
+          <div *ngIf="collecte.statut === 'EN_ATTENTE'" 
+               class="mt-4 flex justify-end space-x-2">
+            <button (click)="onEditCollecte(collecte.id)"
+                    class="text-primary-600 hover:bg-primary-50 p-2 rounded-lg">
+              <svg class="w-5 h-5" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
+              </svg>
+            </button>
+            <button (click)="onDeleteCollecte(collecte.id)"
+                    class="text-red-600 hover:bg-red-50 p-2 rounded-lg">
+              <svg class="w-5 h-5" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message si aucune collecte -->
+    <div *ngIf="collectes.length === 0" 
+         class="empty-state">
+      <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+      </svg>
+      <h3>Aucune collecte</h3>
+      <p>
+        {{ isAdmin ? 'Aucune collecte n\'a été créée' : 'Commencez par créer votre première demande de collecte' }}
+      </p>
+      <button *ngIf="!isAdmin" 
+              routerLink="/add-collecte">
+        <svg class="w-5 h-5" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+        </svg>
+        Nouvelle collecte
       </button>
     </div>
   </div>

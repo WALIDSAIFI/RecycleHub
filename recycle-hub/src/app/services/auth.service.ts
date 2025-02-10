@@ -1,104 +1,314 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay, tap } from 'rxjs/operators';
+import { Observable, of, throwError, BehaviorSubject, firstValueFrom } from 'rxjs';
+import { delay, tap, switchMap, catchError, map } from 'rxjs/operators';
 import { User } from '../models/user.model';
 import { Store } from '@ngrx/store';
 import * as AuthActions from '../store/auth/auth.actions';
+import { BaseDonneesService } from './base-donnees.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly USER_KEY = 'currentUser';
-  private storage: Storage | null = null;
+  private readonly SESSION_STORE = 'session';
+  private readonly USER_STORE = 'users';
+  private readonly SESSION_ID = 'current-session';
+  private readonly ADMIN_EMAIL = 'admin@recyclehub.com';
+  private readonly ADMIN_PASSWORD = 'admin@recyclehub.com';
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
 
-  constructor(private store: Store) {
-    if (typeof window !== 'undefined') {
-      this.storage = window.localStorage;
-      this.initializeAuthState();
-    }
+  constructor(
+    private store: Store,
+    private bd: BaseDonneesService
+  ) {
+    this.initializeAuthState();
   }
 
-  private initializeAuthState() {
-    const user = this.getCurrentUser();
-    if (user) {
-      this.store.dispatch(AuthActions.loginSuccess({ user }));
-    }
-  }
-
-  getCurrentUser(): User | null {
+  private async initializeAuthState() {
     try {
-      if (!this.storage) return null;
-      const userStr = this.storage.getItem(this.USER_KEY);
-      if (!userStr) return null;
-      return JSON.parse(userStr);
-    } catch {
-      return null;
-    }
-  }
+      // Attendre que la base de données soit prête
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-  setCurrentUser(user: User): void {
-    try {
-      if (!this.storage) return;
-      this.storage.setItem(this.USER_KEY, JSON.stringify(user));
+      // Créer les magasins s'ils n'existent pas
+      await firstValueFrom(this.bd.creerMagasin(this.USER_STORE));
+      await firstValueFrom(this.bd.creerMagasin(this.SESSION_STORE));
+      console.log('Magasins créés');
+
+      // Vérifier si l'admin existe
+      const users = await firstValueFrom(this.bd.recupererTout<User>(this.USER_STORE));
+      console.log('Utilisateurs actuels:', users);
+
+      const adminExists = users.some(user => user.email === this.ADMIN_EMAIL);
+      console.log('Admin existe?', adminExists);
+
+      if (!adminExists) {
+        // Créer l'admin directement sans passer par Observable
+        const adminUser: User = {
+          id: 'admin',  // ID fixe pour l'admin
+          email: this.ADMIN_EMAIL,
+          password: this.ADMIN_PASSWORD,
+          firstName: 'Admin',
+          lastName: 'RecycleHub',
+          role: 'ADMIN',
+          profileImage: null,
+          address: '',
+          city: '',
+          postalCode: '',
+          phone: '',
+          birthDate: new Date().toISOString().split('T')[0]
+        };
+
+        console.log('Création de l\'admin...', adminUser);
+
+        try {
+          // Ajouter l'admin à la base de données
+          const createdAdmin = await firstValueFrom(this.bd.ajouter(this.USER_STORE, adminUser));
+          console.log('Admin ajouté avec succès:', createdAdmin);
+          this.currentUserSubject.next(createdAdmin);
+        } catch (error) {
+          console.error('Erreur lors de la création de l\'admin:', error);
+          throw error;
+        }
+      } else {
+        // Si l'admin existe déjà, le récupérer et mettre à jour le currentUserSubject
+        const existingAdmin = users.find(user => user.email === this.ADMIN_EMAIL);
+        if (existingAdmin) {
+          console.log('Admin existant trouvé:', existingAdmin);
+          this.currentUserSubject.next(existingAdmin);
+        }
+      }
     } catch (error) {
-      console.error('Error saving user to localStorage:', error);
+      console.error('Erreur lors de l\'initialisation:', error);
+      // Ne pas propager l'erreur pour permettre à l'application de continuer
+      console.log('Tentative de continuer malgré l\'erreur...');
     }
   }
 
-  removeCurrentUser(): void {
+  private async resetDatabase() {
     try {
-      if (!this.storage) return;
-      this.storage.removeItem(this.USER_KEY);
+      // Supprimer les magasins existants
+      try {
+        await firstValueFrom(this.bd.creerMagasin(this.USER_STORE));
+        const users = await firstValueFrom(this.bd.recupererTout<User>(this.USER_STORE));
+        console.log('Utilisateurs à supprimer:', users);
+        
+        for (const user of users) {
+          console.log('Suppression utilisateur:', user.id);
+          await firstValueFrom(this.bd.supprimer(this.USER_STORE, user.id));
+        }
+        console.log('Tous les utilisateurs ont été supprimés');
+      } catch (e) {
+        console.log('Erreur lors du nettoyage USER_STORE:', e);
+      }
+
+      try {
+        await firstValueFrom(this.bd.creerMagasin(this.SESSION_STORE));
+        const sessions = await firstValueFrom(this.bd.recupererTout<any>(this.SESSION_STORE));
+        console.log('Sessions à supprimer:', sessions);
+        
+        for (const session of sessions) {
+          console.log('Suppression session:', session.id);
+          await firstValueFrom(this.bd.supprimer(this.SESSION_STORE, session.id));
+        }
+        console.log('Toutes les sessions ont été supprimées');
+      } catch (e) {
+        console.log('Erreur lors du nettoyage SESSION_STORE:', e);
+      }
+
+      console.log('Base de données réinitialisée avec succès');
+      return Promise.resolve();
     } catch (error) {
-      console.error('Error removing user from localStorage:', error);
+      console.error('Erreur lors de la réinitialisation de la base de données:', error);
+      return Promise.reject(error);
     }
   }
 
-  isLoggedIn(): boolean {
-    return !!this.getCurrentUser();
+  getCurrentUser(): Observable<User | null> {
+    return this.currentUserSubject.asObservable();
+  }
+
+  getCurrentUserSync(): User | null {
+    return this.currentUserSubject.value;
+  }
+
+  isLoggedIn(): Observable<boolean> {
+    return this.getCurrentUser().pipe(
+      map(user => !!user)
+    );
+  }
+
+  isAdmin(): Observable<boolean> {
+    return this.getCurrentUser().pipe(
+      map(user => user?.role === 'ADMIN')
+    );
   }
 
   register(userData: any): Observable<User> {
-    return of({
-      id: 'user-' + Math.random().toString(36).substr(2, 9),
-      email: userData.email,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      address: userData.address,
-      city: userData.city,
-      postalCode: userData.postalCode,
-      phone: userData.phone,
-      birthDate: userData.birthDate,
-      profileImage: userData.profileImage,
-      password: '',
-      role: 'USER'
-    } as User).pipe(
-      delay(1000),
-      tap(user => {
-        this.setCurrentUser(user);
+    console.log('Données reçues pour l\'inscription:', {
+      ...userData,
+      password: userData.password ? '***' : undefined
+    });
+
+    if (!userData.email || !userData.password || !userData.firstName || !userData.lastName) {
+      console.error('Champs manquants:', {
+        email: !!userData.email,
+        password: !!userData.password,
+        firstName: !!userData.firstName,
+        lastName: !!userData.lastName
+      });
+      return throwError(() => new Error('Tous les champs obligatoires doivent être remplis'));
+    }
+
+    return this.bd.recupererTout<User>(this.USER_STORE).pipe(
+      map(users => users.find(u => u.email === userData.email)),
+      switchMap(existingUser => {
+        if (existingUser) {
+          console.error('Un utilisateur existe déjà avec cet email:', userData.email);
+          return throwError(() => new Error('Un compte existe déjà avec cet email'));
+        }
+
+        const newUser: User = {
+          id: 'user-' + Date.now(),
+          email: userData.email,
+          password: userData.password,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          address: userData.address || '',
+          city: userData.city || '',
+          postalCode: userData.postalCode || '',
+          phone: userData.phone || '',
+          birthDate: userData.birthDate || new Date().toISOString().split('T')[0],
+          profileImage: userData.profileImage || null,
+          role: 'USER'
+        };
+
+        console.log('Création du nouvel utilisateur:', {
+          ...newUser,
+          password: '***'
+        });
+
+        return this.bd.ajouter(this.USER_STORE, newUser).pipe(
+          tap(createdUser => console.log('Utilisateur créé avec succès:', {
+            ...createdUser,
+            password: '***'
+          })),
+          switchMap(createdUser => {
+            const session = {
+              id: this.SESSION_ID,
+              userId: createdUser.id,
+              timestamp: new Date().toISOString()
+            };
+            return this.bd.mettreAJour(this.SESSION_STORE, session).pipe(
+              map(() => createdUser)
+            );
+          }),
+          tap(user => {
+            this.currentUserSubject.next(user);
+            this.store.dispatch(AuthActions.registerSuccess({ user }));
+          }),
+          catchError(error => {
+            console.error('Erreur lors de la création de l\'utilisateur:', error);
+            return throwError(() => new Error('Erreur lors de la création du compte'));
+          })
+        );
       })
     );
   }
 
   login(email: string, password: string): Observable<User> {
-    return of({
-      id: 'user-' + Math.random().toString(36).substr(2, 9),
-      email: email,
-      firstName: 'Test',
-      lastName: 'User',
-      address: '',
-      city: '',
-      postalCode: '',
-      phone: '',
-      birthDate: new Date().toISOString().split('T')[0],
-      password: '',
-      role: 'USER',
-      profileImage: null
-    } as User).pipe(
-      delay(1000),
-      tap(user => {
-        this.setCurrentUser(user);
+    console.log('Tentative de connexion avec:', { email });
+
+    if (!email || !password) {
+      console.error('Email ou mot de passe manquant');
+      return throwError(() => new Error('Email and password are required'));
+    }
+
+    return this.bd.recupererTout<User>(this.USER_STORE).pipe(
+      tap(users => {
+        console.log('Nombre d\'utilisateurs trouvés:', users.length);
+        console.log('Liste des emails:', users.map(u => u.email));
+      }),
+      map(users => {
+        const user = users.find(u => u.email === email);
+        if (!user) {
+          console.error('Aucun utilisateur trouvé avec l\'email:', email);
+          throw new Error('Invalid email or password');
+        }
+
+        console.log('Utilisateur trouvé:', { 
+          id: user.id, 
+          email: user.email,
+          role: user.role
+        });
+
+        if (user.password !== password) {
+          console.error('Mot de passe incorrect pour l\'utilisateur:', email);
+          throw new Error('Invalid email or password');
+        }
+
+        console.log('Connexion réussie pour l\'utilisateur:', email);
+        return user;
+      }),
+      switchMap(user => {
+        const session = {
+          id: this.SESSION_ID,
+          userId: user.id,
+          timestamp: new Date().toISOString()
+        };
+
+        return this.bd.mettreAJour(this.SESSION_STORE, session).pipe(
+          map(() => {
+            console.log('Session mise à jour pour l\'utilisateur:', email);
+            this.currentUserSubject.next(user);
+            this.store.dispatch(AuthActions.loginSuccess({ user }));
+            return user;
+          })
+        );
+      }),
+      catchError(error => {
+        console.error('Erreur lors de la connexion:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  logout(): Observable<void> {
+    return this.bd.mettreAJour(this.SESSION_STORE, {
+      id: this.SESSION_ID,
+      user: null
+    }).pipe(
+      map(() => void 0),
+      tap(() => {
+        this.currentUserSubject.next(null);
+        this.store.dispatch(AuthActions.logout());
+      })
+    );
+  }
+
+  removeCurrentUser(): void {
+    this.currentUserSubject.next(null);
+    this.bd.supprimer(this.SESSION_STORE, this.SESSION_ID).subscribe();
+  }
+
+  updateUser(user: User): Observable<User> {
+    return this.bd.recupererTout<any>(this.USER_STORE).pipe(
+      switchMap(users => {
+        const index = users.findIndex(u => u.id === user.id);
+        if (index === -1) {
+          return throwError(() => new Error('User not found'));
+        }
+        
+        return this.bd.mettreAJour(this.USER_STORE, user).pipe(
+          switchMap(() => this.bd.mettreAJour(this.SESSION_STORE, {
+            id: this.SESSION_ID,
+            user: user
+          }))
+        );
+      }),
+      map(() => user),
+      tap(updatedUser => {
+        this.currentUserSubject.next(updatedUser);
+        this.store.dispatch(AuthActions.loginSuccess({ user: updatedUser }));
       })
     );
   }

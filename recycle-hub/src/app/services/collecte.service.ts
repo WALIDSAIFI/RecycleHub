@@ -1,111 +1,115 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { map, switchMap, catchError } from 'rxjs/operators';
 import { Collecte } from '../models/collecte.model';
+import { BaseDonneesService } from './base-donnees.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CollecteService {
-  private readonly COLLECTES_KEY = 'collectes';
-  private storage: Storage;
+  private readonly NOM_MAGASIN = 'collectes';
 
-  constructor() {
-    this.storage = window.localStorage;
-  }
+  constructor(private bd: BaseDonneesService) {}
 
-  private getCollectes(): Collecte[] {
-    const collectesStr = this.storage.getItem(this.COLLECTES_KEY);
-    return collectesStr ? JSON.parse(collectesStr) : [];
-  }
-
-  private saveCollectes(collectes: Collecte[]): void {
-    this.storage.setItem(this.COLLECTES_KEY, JSON.stringify(collectes));
+  getUserCollectes(userId: string): Observable<Collecte[]> {
+    return this.bd.recupererTout<Collecte>(this.NOM_MAGASIN).pipe(
+      map(collectes => collectes.filter(c => c.userId === userId)),
+      catchError(error => {
+        console.error('Erreur lors de la récupération des collectes:', error);
+        return throwError(() => new Error('Impossible de récupérer vos collectes'));
+      })
+    );
   }
 
   addCollecte(collecte: Omit<Collecte, 'id' | 'dateCreation' | 'statut'>): Observable<Collecte> {
-    const collectes = this.getCollectes();
-    const userCollectes = collectes.filter(c => c.userId === collecte.userId && 
-      ['EN_ATTENTE', 'OCCUPEE', 'EN_COURS'].includes(c.statut));
+    return this.getUserCollectes(collecte.userId).pipe(
+      switchMap(collectes => {
+        const collectesEnCours = collectes.filter(c => 
+          ['EN_ATTENTE', 'OCCUPEE', 'EN_COURS'].includes(c.statut)
+        );
 
-    // Vérifier le nombre maximum de demandes en cours
-    if (userCollectes.length >= 3) {
-      return throwError(() => new Error('Vous avez déjà 3 demandes en cours'));
-    }
+        if (collectesEnCours.length >= 3) {
+          return throwError(() => new Error('Vous avez déjà 3 demandes en cours'));
+        }
 
-    // Vérifier le poids total
-    if (collecte.poidsTotal > 10000) { // 10kg en grammes
-      return throwError(() => new Error('Le poids total ne peut pas dépasser 10kg'));
-    }
+        if (collecte.poidsTotal > 10000) {
+          throw new Error('Le poids total ne peut pas dépasser 10kg');
+        }
 
-    // Vérifier le poids minimum
-    if (collecte.poidsTotal < 1000) { // 1kg en grammes
-      return throwError(() => new Error('Le poids total doit être d\'au moins 1kg'));
-    }
+        if (collecte.poidsTotal < 1000) {
+          throw new Error('Le poids total doit être d\'au moins 1kg');
+        }
 
-    const newCollecte: Collecte = {
-      ...collecte,
-      id: 'collecte-' + Date.now(),
-      dateCreation: new Date().toISOString(),
-      statut: 'EN_ATTENTE'
-    };
+        const nouvelleCollecte: Collecte = {
+          ...collecte,
+          id: 'collecte-' + Date.now(),
+          dateCreation: new Date().toISOString(),
+          statut: 'EN_ATTENTE'
+        };
 
-    collectes.push(newCollecte);
-    this.saveCollectes(collectes);
-
-    return of(newCollecte);
+        return this.bd.ajouter(this.NOM_MAGASIN, nouvelleCollecte);
+      }),
+      catchError(error => {
+        console.error('Erreur lors de l\'ajout de la collecte:', error);
+        return throwError(() => new Error('Impossible d\'ajouter la collecte'));
+      })
+    );
   }
 
-  getUserCollectes(userId: string): Observable<Collecte[]> {
-    const collectes = this.getCollectes();
-    return of(collectes.filter(c => c.userId === userId));
-  }
-
-  updateCollecte(collecteId: string, updates: Partial<Collecte>): Observable<Collecte> {
-    const collectes = this.getCollectes();
-    const index = collectes.findIndex(c => c.id === collecteId);
-    
-    if (index === -1) {
-      return throwError(() => new Error('Collecte non trouvée'));
-    }
-
-    const collecte = collectes[index];
-    if (collecte.statut !== 'EN_ATTENTE') {
-      return throwError(() => new Error('Seules les collectes en attente peuvent être modifiées'));
-    }
-
-    collectes[index] = { ...collecte, ...updates };
-    this.saveCollectes(collectes);
-
-    return of(collectes[index]);
+  updateCollecte(collecteId: string, miseAJour: Partial<Collecte>): Observable<Collecte> {
+    return this.getUserCollectes(miseAJour.userId || '').pipe(
+      map(collectes => {
+        const collecte = collectes.find(c => c.id === collecteId);
+        if (!collecte) {
+          throw new Error('Collecte non trouvée');
+        }
+        if (collecte.statut !== 'EN_ATTENTE') {
+          throw new Error('Seules les collectes en attente peuvent être modifiées');
+        }
+        return { ...collecte, ...miseAJour };
+      }),
+      switchMap(collecteMiseAJour => this.bd.mettreAJour(this.NOM_MAGASIN, collecteMiseAJour))
+    );
   }
 
   deleteCollecte(collecteId: string): Observable<void> {
-    const collectes = this.getCollectes();
-    const index = collectes.findIndex(c => c.id === collecteId);
-    
-    if (index === -1) {
-      return throwError(() => new Error('Collecte non trouvée'));
-    }
-
-    const collecte = collectes[index];
-    if (collecte.statut !== 'EN_ATTENTE') {
-      return throwError(() => new Error('Seules les collectes en attente peuvent être supprimées'));
-    }
-
-    collectes.splice(index, 1);
-    this.saveCollectes(collectes);
-
-    return of(void 0);
+    return this.getCollecteById(collecteId).pipe(
+      switchMap(collecte => 
+        this.getUserCollectes(collecte.userId).pipe(
+          map(collectes => {
+            const collecteTrouvee = collectes.find(c => c.id === collecteId);
+            if (!collecteTrouvee) {
+              throw new Error('Collecte non trouvée');
+            }
+            if (collecteTrouvee.statut !== 'EN_ATTENTE') {
+              throw new Error('Seules les collectes en attente peuvent être supprimées');
+            }
+          }),
+          switchMap(() => this.bd.supprimer(this.NOM_MAGASIN, collecteId))
+        )
+      )
+    );
   }
 
   getCollecteById(id: string): Observable<Collecte> {
-    const collectes = this.getCollectes();
-    const collecte = collectes.find(c => c.id === id);
-    
-    if (!collecte) {
-      return throwError(() => new Error('Collecte non trouvée'));
-    }
-    
-    return of(collecte);
+    return this.bd.recupererTout<Collecte>(this.NOM_MAGASIN).pipe(
+      map(collectes => {
+        const collecte = collectes.find(c => c.id === id);
+        if (!collecte) {
+          throw new Error('Collecte non trouvée');
+        }
+        return collecte;
+      })
+    );
+  }
+
+  getAllCollectes(): Observable<Collecte[]> {
+    return this.bd.recupererTout<Collecte>(this.NOM_MAGASIN).pipe(
+      catchError(error => {
+        console.error('Erreur lors de la récupération des collectes:', error);
+        return throwError(() => new Error('Impossible de récupérer les collectes'));
+      })
+    );
   }
 } 

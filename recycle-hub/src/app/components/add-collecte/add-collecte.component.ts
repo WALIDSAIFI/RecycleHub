@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { CollecteService } from '../../services/collecte.service';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-add-collecte',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './add-collecte.component.html',
   styleUrl: './add-collecte.component.scss'
 })
@@ -33,21 +33,25 @@ export class AddCollecteComponent implements OnInit {
   ) {
     this.minDate = new Date().toISOString().split('T')[0];
     this.collecteForm = this.fb.group({
-      type: ['', Validators.required],
+      type: ['', [Validators.required]],
       poids: ['', [
         Validators.required,
         Validators.min(1000),
         Validators.max(10000)
       ]],
-      adresse: ['', Validators.required],
-      dateCollecte: ['', Validators.required],
-      creneauHoraire: ['', Validators.required],
+      adresse: ['', [Validators.required]],
+      dateCollecte: ['', [Validators.required]],
+      creneauHoraire: ['', [Validators.required]],
       notes: ['']
     });
   }
 
   ngOnInit() {
-    // Plus besoin d'initialiser un déchet
+    const currentUser = this.authService.getCurrentUserSync();
+    if (!currentUser) {
+      this.router.navigate(['/login']);
+      return;
+    }
   }
 
   onPhotoSelected(event: any) {
@@ -67,22 +71,23 @@ export class AddCollecteComponent implements OnInit {
     this.selectedPhotos.splice(index, 1);
   }
 
+  isFormValid(): boolean {
+    return this.collecteForm.valid;
+  }
+
   onSubmit() {
+    this.markFormGroupTouched(this.collecteForm);
+    
     if (this.collecteForm.valid) {
-      const currentUser = this.authService.getCurrentUser();
+      const currentUser = this.authService.getCurrentUserSync();
       if (!currentUser) {
         this.error = 'Vous devez être connecté pour créer une collecte';
         return;
       }
 
       const poids = Number(this.collecteForm.get('poids')?.value);
-      if (poids < 1000) {
-        this.error = 'Le poids total doit être d\'au moins 1kg';
-        return;
-      }
-
-      if (poids > 10000) {
-        this.error = 'Le poids total ne peut pas dépasser 10kg';
+      if (isNaN(poids) || poids < 1000 || poids > 10000) {
+        this.error = 'Le poids doit être entre 1000g et 10000g';
         return;
       }
 
@@ -106,10 +111,21 @@ export class AddCollecteComponent implements OnInit {
           this.router.navigate(['/home']);
         },
         error: (error) => {
-          this.error = error.message;
           this.loading = false;
+          this.error = error.message || 'Une erreur est survenue lors de la création de la collecte';
         }
       });
+    } else {
+      this.error = 'Veuillez remplir tous les champs obligatoires correctement';
     }
+  }
+
+  markFormGroupTouched(formGroup: FormGroup) {
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsTouched();
+      if (control instanceof FormGroup) {
+        this.markFormGroupTouched(control);
+      }
+    });
   }
 }

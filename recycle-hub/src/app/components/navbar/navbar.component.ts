@@ -1,13 +1,11 @@
 import { Component, OnInit, HostListener, OnDestroy } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
-import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/user.model';
-import * as AuthActions from '../../store/auth/auth.actions';
 import { AuthState } from '../../store/auth/auth.reducer';
-import { Subscription } from 'rxjs';
+import { Subscription, Observable } from 'rxjs';
 import { selectAuthUser } from '../../store/auth/auth.selectors';
 
 @Component({
@@ -18,23 +16,20 @@ import { selectAuthUser } from '../../store/auth/auth.selectors';
   styleUrl: './navbar.component.scss'
 })
 export class NavbarComponent implements OnInit, OnDestroy {
-  currentUser: User | null = null;
+  currentUser$: Observable<User | null>;
   isProfileMenuOpen = false;
-  private authSubscription: Subscription;
+  private authSubscription: Subscription | null = null;
 
   constructor(
     private authService: AuthService,
     private store: Store<{ auth: AuthState }>,
     private router: Router
   ) {
-    // S'abonner aux changements d'état de l'authentification
-    this.authSubscription = this.store.select(selectAuthUser).subscribe(user => {
-      this.currentUser = user;
-    });
+    this.currentUser$ = this.store.select(selectAuthUser);
   }
 
   ngOnInit() {
-    this.currentUser = this.authService.getCurrentUser();
+    this.authSubscription = this.currentUser$.subscribe();
   }
 
   ngOnDestroy() {
@@ -47,7 +42,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.isProfileMenuOpen = !this.isProfileMenuOpen;
   }
 
-  // Fermer le menu si on clique en dehors
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     const profileMenu = document.getElementById('profile-menu');
@@ -59,11 +53,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
   }
 
-  onLogout() {
-    this.isProfileMenuOpen = false; // Fermer le menu
-    this.store.dispatch(AuthActions.logout());
-    this.authService.removeCurrentUser(); // S'assurer que l'utilisateur est supprimé du localStorage
-    this.currentUser = null; // Mettre à jour explicitement currentUser
-    this.router.navigate(['/login']);
+  logout() {
+    this.authService.logout().subscribe({
+      next: () => {
+        this.isProfileMenuOpen = false;
+        this.router.navigate(['/login']);
+      },
+      error: (error) => {
+        console.error('Erreur lors de la déconnexion:', error);
+      }
+    });
   }
 }

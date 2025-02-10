@@ -1,3 +1,162 @@
+// Animations
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+// Styles principaux
+.login-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 50%, #dcfce7 100%);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><path fill="%2322c55e" fill-opacity="0.05" d="M45,-78.1C58.3,-71.3,69.1,-58.9,77.8,-44.7C86.5,-30.4,93.2,-14.2,92.4,1.5C91.5,17.2,83.1,32.4,73.3,46.5C63.5,60.6,52.4,73.5,38.4,79.7C24.4,85.9,7.6,85.4,-8.4,82.1C-24.4,78.8,-39.5,72.8,-53.8,64.1C-68.1,55.4,-81.6,44,-87.4,29.6C-93.3,15.2,-91.6,-2.1,-86.6,-18.1C-81.6,-34,-73.3,-48.5,-61.6,-56.6C-49.9,-64.7,-34.8,-66.4,-21.2,-74.6C-7.5,-82.7,4.7,-97.4,19.6,-96.8C34.4,-96.3,51.9,-80.5,45,-78.1Z" transform="translate(100 100)" /></svg>') no-repeat center center;
+    background-size: 120% 120%;
+    opacity: 0.1;
+    animation: pulse 15s ease-in-out infinite;
+  }
+}
+
+.login-card {
+  animation: fadeIn 0.8s ease-out;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+
+  .logo-container {
+    animation: slideIn 0.8s ease-out;
+    
+    .logo {
+      transition: transform 0.3s ease;
+      &:hover {
+        transform: rotate(360deg) scale(1.1);
+      }
+    }
+  }
+}
+
+// Styles des inputs
+.form-input {
+  position: relative;
+  transition: all 0.3s ease;
+
+  input {
+    background: rgba(243, 244, 246, 0.8);
+    transition: all 0.3s ease;
+    
+    &:focus {
+      background: white;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+    }
+  }
+
+  .input-icon {
+    transition: all 0.3s ease;
+  }
+
+  &:focus-within {
+    .input-icon {
+      color: #16a34a;
+      transform: scale(1.1);
+    }
+  }
+}
+
+// Styles des boutons
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+  }
+
+  &:hover::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// Animation de chargement
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// Effets de survol
+.hover-effect {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Messages d'erreur
+.error-message {
+  animation: slideIn 0.3s ease-out;
+  background: rgba(254, 226, 226, 0.8);
+  backdrop-filter: blur(4px);
+}
+
+// Responsive design
+@media (max-width: 640px) {
+  .login-card {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+}
+
+// Styles pour les icônes interactives
+.interactive-icon {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
 .login-container {
   min-height: calc(100vh - 70px);
   display: flex;
