@@ -58,12 +58,16 @@ export class CollecteService {
   }
 
   updateCollecte(collecteId: string, miseAJour: Partial<Collecte>): Observable<Collecte> {
-    return this.getUserCollectes(miseAJour.userId || '').pipe(
-      map(collectes => {
-        const collecte = collectes.find(c => c.id === collecteId);
+    return this.getCollecteById(collecteId).pipe(
+      map(collecte => {
         if (!collecte) {
           throw new Error('Collecte non trouvée');
         }
+        // Si la mise à jour concerne uniquement le statut, on permet la modification
+        if (Object.keys(miseAJour).length === 1 && 'statut' in miseAJour) {
+          return { ...collecte, ...miseAJour };
+        }
+        // Pour les autres modifications, on garde la restriction sur le statut EN_ATTENTE
         if (collecte.statut !== 'EN_ATTENTE') {
           throw new Error('Seules les collectes en attente peuvent être modifiées');
         }

@@ -34,6 +34,19 @@ export class AuthService {
       await firstValueFrom(this.bd.creerMagasin(this.SESSION_STORE));
       console.log('Magasins créés');
 
+      // Vérifier la session existante
+      const sessions = await firstValueFrom(this.bd.recupererTout<any>(this.SESSION_STORE));
+      const currentSession = sessions.find(s => s.id === this.SESSION_ID);
+      
+      if (currentSession && currentSession.userId) {
+        const users = await firstValueFrom(this.bd.recupererTout<User>(this.USER_STORE));
+        const currentUser = users.find(u => u.id === currentSession.userId);
+        if (currentUser) {
+          this.currentUserSubject.next(currentUser);
+          this.store.dispatch(AuthActions.loginSuccess({ user: currentUser }));
+        }
+      }
+
       // Vérifier si l'admin existe
       const users = await firstValueFrom(this.bd.recupererTout<User>(this.USER_STORE));
       console.log('Utilisateurs actuels:', users);
@@ -42,9 +55,9 @@ export class AuthService {
       console.log('Admin existe?', adminExists);
 
       if (!adminExists) {
-        // Créer l'admin directement sans passer par Observable
+        // Créer l'admin
         const adminUser: User = {
-          id: 'admin',  // ID fixe pour l'admin
+          id: 'admin',
           email: this.ADMIN_EMAIL,
           password: this.ADMIN_PASSWORD,
           firstName: 'Admin',
@@ -61,25 +74,15 @@ export class AuthService {
         console.log('Création de l\'admin...', adminUser);
 
         try {
-          // Ajouter l'admin à la base de données
           const createdAdmin = await firstValueFrom(this.bd.ajouter(this.USER_STORE, adminUser));
           console.log('Admin ajouté avec succès:', createdAdmin);
-          this.currentUserSubject.next(createdAdmin);
         } catch (error) {
           console.error('Erreur lors de la création de l\'admin:', error);
           throw error;
         }
-      } else {
-        // Si l'admin existe déjà, le récupérer et mettre à jour le currentUserSubject
-        const existingAdmin = users.find(user => user.email === this.ADMIN_EMAIL);
-        if (existingAdmin) {
-          console.log('Admin existant trouvé:', existingAdmin);
-          this.currentUserSubject.next(existingAdmin);
-        }
       }
     } catch (error) {
       console.error('Erreur lors de l\'initialisation:', error);
-      // Ne pas propager l'erreur pour permettre à l'application de continuer
       console.log('Tentative de continuer malgré l\'erreur...');
     }
   }
@@ -224,29 +227,11 @@ export class AuthService {
     }
 
     return this.bd.recupererTout<User>(this.USER_STORE).pipe(
-      tap(users => {
-        console.log('Nombre d\'utilisateurs trouvés:', users.length);
-        console.log('Liste des emails:', users.map(u => u.email));
-      }),
       map(users => {
         const user = users.find(u => u.email === email);
-        if (!user) {
-          console.error('Aucun utilisateur trouvé avec l\'email:', email);
+        if (!user || user.password !== password) {
           throw new Error('Invalid email or password');
         }
-
-        console.log('Utilisateur trouvé:', { 
-          id: user.id, 
-          email: user.email,
-          role: user.role
-        });
-
-        if (user.password !== password) {
-          console.error('Mot de passe incorrect pour l\'utilisateur:', email);
-          throw new Error('Invalid email or password');
-        }
-
-        console.log('Connexion réussie pour l\'utilisateur:', email);
         return user;
       }),
       switchMap(user => {
@@ -258,16 +243,11 @@ export class AuthService {
 
         return this.bd.mettreAJour(this.SESSION_STORE, session).pipe(
           map(() => {
-            console.log('Session mise à jour pour l\'utilisateur:', email);
             this.currentUserSubject.next(user);
             this.store.dispatch(AuthActions.loginSuccess({ user }));
             return user;
           })
         );
-      }),
-      catchError(error => {
-        console.error('Erreur lors de la connexion:', error);
-        return throwError(() => error);
       })
     );
   }
@@ -275,13 +255,14 @@ export class AuthService {
   logout(): Observable<void> {
     return this.bd.mettreAJour(this.SESSION_STORE, {
       id: this.SESSION_ID,
-      user: null
+      userId: null,
+      timestamp: new Date().toISOString()
     }).pipe(
-      map(() => void 0),
       tap(() => {
         this.currentUserSubject.next(null);
         this.store.dispatch(AuthActions.logout());
-      })
+      }),
+      map(() => void 0)
     );
   }
 

@@ -52,35 +52,60 @@
 }
 
 .status-badge {
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
+  @apply inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
-.status-waiting {
-  background-color: #f1c40f;
-  color: #fff;
-}
+  &.en-attente {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: white;
+    &::before {
+      content: '⏳';
+      margin-right: 6px;
+    }
+  }
 
-.status-busy {
-  background-color: #e67e22;
-  color: #fff;
-}
+  &.occupee {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+    &::before {
+      content: '🔄';
+      margin-right: 6px;
+    }
+  }
 
-.status-progress {
-  background-color: #3498db;
-  color: #fff;
-}
+  &.en-cours {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    &::before {
+      content: '🚚';
+      margin-right: 6px;
+    }
+  }
 
-.status-success {
-  background-color: #2ecc71;
-  color: #fff;
-}
+  &.validee {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    &::before {
+      content: '✅';
+      margin-right: 6px;
+    }
+  }
 
-.status-rejected {
-  background-color: #e74c3c;
-  color: #fff;
+  &.rejetee {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    &::before {
+      content: '❌';
+      margin-right: 6px;
+    }
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  }
 }
 
 .no-collectes {
@@ -155,7 +180,6 @@
 // Styles principaux
 :host {
   display: block;
-  min-height: 100vh;
 }
 
 .container {
@@ -280,85 +304,23 @@ button {
 // Styles pour le tableau
 .table-container {
   @apply bg-white rounded-xl shadow-lg overflow-hidden;
-  animation: fadeIn 0.3s ease-out;
-}
 
-table {
-  @apply w-full border-collapse;
-
-  thead {
-    @apply bg-gradient-to-r from-primary-50 to-primary-100;
+  table {
+    @apply w-full;
 
     th {
-      @apply px-6 py-4 text-left text-sm font-semibold text-primary-700 uppercase tracking-wider border-b border-primary-200;
-      
-      &:first-child {
-        @apply rounded-tl-xl;
-      }
-      
-      &:last-child {
-        @apply rounded-tr-xl;
-      }
+      @apply px-4 py-3 bg-gray-800 text-left text-xs font-medium text-white uppercase tracking-wider;
     }
-  }
 
-  tbody {
-    tr {
-      @apply border-b border-gray-100 hover:bg-primary-50/30 transition-colors duration-200;
+    td {
+      @apply px-4 py-3 border-t border-gray-100;
 
-      &:last-child {
-        @apply border-none;
+      .date {
+        @apply font-medium text-gray-900;
       }
 
-      td {
-        @apply px-6 py-4 whitespace-nowrap text-sm;
-
-        // Style pour la colonne de date
-        &:first-child {
-          .date {
-            @apply font-medium text-gray-900;
-          }
-          .time {
-            @apply text-sm text-gray-500;
-          }
-        }
-
-        // Style pour le type de déchet
-        &:nth-child(2) {
-          @apply font-medium text-primary-600;
-        }
-
-        // Style pour le poids
-        &:nth-child(3) {
-          @apply text-gray-700;
-        }
-
-        // Style pour l'adresse
-        &:nth-child(4) {
-          @apply text-gray-600 max-w-xs truncate;
-        }
-
-        // Style pour le select du statut
-        select {
-          @apply px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-sm font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200;
-          
-          option {
-            @apply py-1;
-          }
-        }
-
-        // Style pour les actions
-        &:last-child {
-          @apply text-right pr-8;
-          
-          button.delete-btn {
-            @apply inline-flex items-center;
-            
-            &:hover {
-              @apply bg-red-50 text-red-700;
-            }
-          }
-        }
+      .time {
+        @apply text-sm text-gray-500;
       }
     }
   }
@@ -378,32 +340,33 @@ table {
 
 // Styles pour les statuts
 .status-badge {
-  @apply px-3 py-1.5 rounded-full text-sm font-medium;
+  @apply px-3 py-1 rounded-full text-xs font-medium;
 
   &.en-attente {
-    @apply bg-yellow-100 text-yellow-700;
+    @apply bg-yellow-100 text-yellow-800;
   }
 
   &.en-cours {
-    @apply bg-blue-100 text-blue-700;
+    @apply bg-blue-100 text-blue-800;
   }
 
   &.validee {
-    @apply bg-green-100 text-green-700;
+    @apply bg-green-100 text-green-800;
   }
 
   &.rejetee {
-    @apply bg-red-100 text-red-700;
+    @apply bg-red-100 text-red-800;
   }
 
   &.occupee {
-    @apply bg-purple-100 text-purple-700;
+    @apply bg-purple-100 text-purple-800;
   }
 }
 
 // Style pour le conteneur vide
 .empty-state {
-  @apply text-center py-16 bg-white rounded-xl shadow-lg;
+  @apply text-center py-12 px-4 bg-white rounded-xl shadow-lg;
+  border: 2px solid #1a472a;
   animation: fadeIn 0.3s ease-out;
 
   svg {
@@ -415,11 +378,11 @@ table {
   }
 
   p {
-    @apply text-gray-500 mb-8;
+    @apply text-gray-600 mb-6;
   }
 
   button {
-    @apply inline-flex items-center px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all duration-200 transform hover:scale-105;
+    @apply inline-flex items-center px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 transition-colors duration-200;
 
     svg {
       @apply w-5 h-5 mr-2 text-white mb-0;
@@ -452,4 +415,189 @@ table {
   span {
     @apply font-medium;
   }
+}
+
+.collecte-card {
+  @apply bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg;
+  
+  .card-header {
+    @apply p-4 border-b border-gray-100;
+  }
+
+  .card-content {
+    @apply p-4;
+  }
+
+  .photos-grid {
+    @apply grid grid-cols-3 gap-2 mt-4;
+    max-height: 80px;
+    
+    .photo-container {
+      @apply relative aspect-square rounded-lg overflow-hidden;
+      height: 60px;
+
+      img {
+        @apply w-full h-full object-cover;
+      }
+    }
+  }
+
+  button {
+    @apply flex items-center transition-all duration-200;
+
+    &:hover {
+      @apply transform scale-105;
+    }
+
+    svg {
+      @apply transition-transform duration-200;
+    }
+
+    &:hover svg {
+      @apply transform rotate-12;
+    }
+  }
+}
+
+.status-badge {
+  @apply px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.photos-grid {
+  @apply grid grid-cols-3 gap-1 mt-2;
+  max-height: 80px;
+
+  .photo-container {
+    @apply aspect-square rounded overflow-hidden;
+    height: 60px;
+
+    img {
+      @apply w-full h-full object-cover;
+    }
+  }
+}
+
+.empty-state {
+  @apply text-center py-12 px-4 bg-white rounded-xl shadow-lg;
+
+  h3 {
+    @apply text-xl font-semibold text-gray-900 mb-2;
+  }
+
+  p {
+    @apply text-gray-600 mb-6;
+  }
+
+  button {
+    @apply inline-flex items-center px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 transition-colors duration-200;
+  }
+}
+
+// Animation du spinner
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+// Styles pour la table admin
+.table-container {
+  @apply overflow-x-auto rounded-xl bg-white shadow-md;
+  
+  table {
+    @apply min-w-full divide-y divide-gray-200;
+    
+    thead {
+      @apply bg-gray-50;
+      
+      th {
+        @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+      }
+    }
+    
+    tbody {
+      @apply divide-y divide-gray-200;
+      
+      tr {
+        @apply hover:bg-gray-50;
+        
+        td {
+          @apply px-6 py-4 whitespace-nowrap text-sm text-gray-500;
+          
+          .date {
+            @apply font-medium text-gray-900;
+          }
+          
+          .time {
+            @apply text-xs text-gray-500;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Styles pour les actions
+.action-buttons {
+  @apply flex justify-end space-x-2 mt-4;
+
+  button {
+    @apply p-2 rounded-lg transition-colors duration-200;
+
+    &.edit-btn {
+      @apply text-green-700 hover:bg-green-50;
+    }
+
+    &.delete-btn {
+      @apply text-red-600 hover:bg-red-50;
+    }
+  }
+}
+
+// Style pour le message d'erreur
+.error-message {
+  @apply bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4;
+}
+
+// Style pour le spinner de chargement
+.loading-spinner {
+  @apply flex justify-center items-center py-12;
+
+  .spinner {
+    @apply w-12 h-12 border-4 border-green-700 border-t-transparent rounded-full animate-spin;
+  }
+}
+
+// Style pour le conteneur des badges dans la carte
+.card-header {
+  .status-container {
+    @apply flex items-center justify-between;
+    
+    .status-badge {
+      @apply transform transition-transform duration-200;
+      
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+  }
+}
+
+// Animation d'apparition
+@keyframes fadeInStatus {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.status-badge {
+  animation: fadeInStatus 0.3s ease-out;
 }

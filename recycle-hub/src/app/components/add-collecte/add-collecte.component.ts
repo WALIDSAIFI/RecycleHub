@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { CollecteService } from '../../services/collecte.service';
 import { AuthService } from '../../services/auth.service';
+import { Observable, map, of } from 'rxjs';
 
 @Component({
   selector: 'app-add-collecte',
@@ -18,6 +19,7 @@ export class AddCollecteComponent implements OnInit {
   error: string | null = null;
   selectedPhotos: string[] = [];
   minDate: string;
+  currentUserId: string | null = null;
 
   typeDechets = ['PLASTIQUE', 'VERRE', 'PAPIER', 'METAL'];
   creneauxHoraires = Array.from({ length: 19 }, (_, i) => {
@@ -52,6 +54,29 @@ export class AddCollecteComponent implements OnInit {
       this.router.navigate(['/login']);
       return;
     }
+    this.currentUserId = currentUser.id;
+  }
+
+  private checkCollectesEnCours(): Observable<boolean> {
+    if (!this.currentUserId) {
+      return of(false);
+    }
+    
+    return this.collecteService.getUserCollectes(this.currentUserId).pipe(
+      map(collectes => {
+        const collectesEnCours = collectes.filter(c => 
+          ['EN_ATTENTE', 'OCCUPEE', 'EN_COURS'].includes(c.statut)
+        );
+        
+        console.log('Nombre de collectes en cours:', collectesEnCours.length);
+        
+        if (collectesEnCours.length >= 3) {
+          throw new Error('Vous avez déjà 3 collectes en cours. Veuillez attendre qu\'une collecte soit terminée avant d\'en créer une nouvelle.');
+        }
+        
+        return true;
+      })
+    );
   }
 
   onPhotoSelected(event: any) {
@@ -78,7 +103,7 @@ export class AddCollecteComponent implements OnInit {
   onSubmit() {
     this.markFormGroupTouched(this.collecteForm);
     
-    if (this.collecteForm.valid) {
+    if (this.collecteForm.valid && !this.loading) {
       const currentUser = this.authService.getCurrentUserSync();
       if (!currentUser) {
         this.error = 'Vous devez être connecté pour créer une collecte';
@@ -94,25 +119,40 @@ export class AddCollecteComponent implements OnInit {
       this.loading = true;
       this.error = null;
 
-      const collecteData = {
-        ...this.collecteForm.value,
-        userId: currentUser.id,
-        photos: this.selectedPhotos,
-        dechets: [{
-          type: this.collecteForm.get('type')?.value,
-          poids: poids
-        }],
-        poidsTotal: poids
-      };
+      // Vérifier d'abord le nombre de collectes en cours
+      this.checkCollectesEnCours().subscribe({
+        next: (canAdd) => {
+          if (!canAdd) {
+            this.loading = false;
+            this.error = 'Impossible de créer une nouvelle collecte';
+            return;
+          }
 
-      this.collecteService.addCollecte(collecteData).subscribe({
-        next: () => {
-          this.loading = false;
-          this.router.navigate(['/home']);
+          const collecteData = {
+            ...this.collecteForm.value,
+            userId: currentUser.id,
+            photos: this.selectedPhotos,
+            dechets: [{
+              type: this.collecteForm.get('type')?.value,
+              poids: poids
+            }],
+            poidsTotal: poids
+          };
+
+          this.collecteService.addCollecte(collecteData).subscribe({
+            next: () => {
+              this.loading = false;
+              this.router.navigate(['/home']);
+            },
+            error: (error) => {
+              this.loading = false;
+              this.error = error.message || 'Une erreur est survenue lors de la création de la collecte';
+            }
+          });
         },
         error: (error) => {
           this.loading = false;
-          this.error = error.message || 'Une erreur est survenue lors de la création de la collecte';
+          this.error = error.message;
         }
       });
     } else {

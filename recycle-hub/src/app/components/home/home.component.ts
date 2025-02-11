@@ -1,165 +1,148 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterModule } from '@angular/router';
-import { Store } from '@ngrx/store';
-import { AuthService } from '../../services/auth.service';
-import { CollecteService } from '../../services/collecte.service';
-import { User } from '../../models/user.model';
+import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Collecte } from '../../models/collecte.model';
-import * as AuthActions from '../../store/auth/auth.actions';
-import { selectAuthUser } from '../../store/auth/auth.selectors';
-import { AuthState } from '../../store/auth/auth.reducer';
+import { CollecteService } from '../../services/collecte.service';
+import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.scss'
+  styleUrls: ['./home.component.scss'],
+  standalone: true,
+  imports: [CommonModule, RouterModule, FormsModule]
 })
 export class HomeComponent implements OnInit {
-  currentUser: User | null = null;
   collectes: Collecte[] = [];
+  isAdmin = false;
   loading = true;
   error: string | null = null;
-  isAdmin = false;
+  currentUserId: string | null = null;
 
   constructor(
-    private authService: AuthService,
     private collecteService: CollecteService,
-    private store: Store<{ auth: AuthState }>,
+    private authService: AuthService,
     private router: Router
   ) {}
 
-  ngOnInit() {
-    this.store.select(selectAuthUser).subscribe(user => {
-      this.currentUser = user;
-      this.isAdmin = user?.role === 'ADMIN';
-      if (user) {
-        if (this.isAdmin) {
-          this.loadAllCollectes();
-        } else {
-          this.loadUserCollectes(user.id);
+  ngOnInit(): void {
+    this.authService.getCurrentUser().subscribe({
+      next: (user) => {
+        if (!user) {
+          this.router.navigate(['/login']);
+          return;
         }
-      } else {
+        this.currentUserId = user.id;
+        this.isAdmin = user.role === 'ADMIN';
+        if (this.isAdmin) {
+          this.getAllCollectes();
+        } else {
+          this.getUserCollectes(user.id);
+        }
+      },
+      error: (error) => {
+        console.error('Erreur lors de la récupération de l\'utilisateur:', error);
         this.router.navigate(['/login']);
       }
     });
   }
 
-  loadUserCollectes(userId: string) {
-    this.collecteService.getUserCollectes(userId).subscribe({
-      next: (collectes) => {
-        this.collectes = collectes;
-        this.loading = false;
-      },
-      error: (error) => {
-        this.error = error.message;
-        this.loading = false;
-      }
-    });
-  }
-
-  loadAllCollectes() {
+  getAllCollectes(): void {
+    this.loading = true;
     this.collecteService.getAllCollectes().subscribe({
       next: (collectes) => {
-        this.collectes = collectes;
+        this.collectes = this.processCollectes(collectes);
         this.loading = false;
       },
       error: (error) => {
-        this.error = error.message;
+        console.error('Erreur lors de la récupération des collectes:', error);
+        this.error = 'Impossible de récupérer les collectes';
         this.loading = false;
       }
     });
   }
 
-  updateCollecteStatus(collecteId: string, newStatus: 'EN_ATTENTE' | 'OCCUPEE' | 'EN_COURS' | 'VALIDEE' | 'REJETEE') {
-    if (!this.isAdmin) return;
+  getUserCollectes(userId: string): void {
+    this.loading = true;
+    this.collecteService.getUserCollectes(userId).subscribe({
+      next: (collectes) => {
+        this.collectes = this.processCollectes(collectes);
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Erreur lors de la récupération des collectes:', error);
+        this.error = 'Impossible de récupérer vos collectes';
+        this.loading = false;
+      }
+    });
+  }
 
-    const collecte = this.collectes.find(c => c.id === collecteId);
-    if (collecte) {
-      this.collecteService.updateCollecte(collecteId, { ...collecte, statut: newStatus }).subscribe({
-        next: (updatedCollecte) => {
-          this.collectes = this.collectes.map(c => 
-            c.id === collecteId ? updatedCollecte : c
-          );
+  processCollectes(collectes: Collecte[]): Collecte[] {
+    return collectes.sort((a, b) => new Date(b.dateCreation).getTime() - new Date(a.dateCreation).getTime());
+  }
+
+  onStatusChange(event: Event, collecteId: string): void {
+    const select = event.target as HTMLSelectElement;
+    const newStatus = select.value as Collecte['statut'];
+    
+    this.collecteService.updateCollecte(collecteId, { statut: newStatus }).subscribe({
+      next: (updatedCollecte) => {
+        this.collectes = this.collectes.map(c => 
+          c.id === collecteId ? updatedCollecte : c
+        );
+      },
+      error: (error) => {
+        console.error('Erreur lors de la mise à jour du statut:', error);
+        this.error = 'Impossible de mettre à jour le statut';
+      }
+    });
+  }
+
+  onDeleteCollecte(id: string): void {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette collecte ?')) {
+      this.collecteService.deleteCollecte(id, this.isAdmin).subscribe({
+        next: () => {
+          this.collectes = this.collectes.filter(c => c.id !== id);
         },
         error: (error) => {
-          this.error = error.message;
+          console.error('Erreur lors de la suppression:', error);
+          this.error = 'Impossible de supprimer la collecte';
         }
       });
     }
   }
 
-  onAddCollecte() {
-    this.router.navigate(['/add-collecte']);
-  }
-
-  onEditCollecte(id: string) {
+  onEditCollecte(id: string): void {
     this.router.navigate(['/edit-collecte', id]);
   }
 
-  onDeleteCollecte(collecteId: string) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette collecte ?')) {
-      this.loading = true;
-      this.error = null;
-      
-      this.collecteService.deleteCollecte(collecteId, this.isAdmin).subscribe({
-        next: () => {
-          this.collectes = this.collectes.filter(c => c.id !== collecteId);
-          this.loading = false;
-          // Recharger les collectes après la suppression
-          if (this.isAdmin) {
-            this.loadAllCollectes();
-          } else {
-            this.loadUserCollectes(this.currentUser?.id || '');
-          }
-        },
-        error: (error) => {
-          this.error = error.message || 'Erreur lors de la suppression de la collecte';
-          this.loading = false;
-          console.error('Erreur lors de la suppression:', error);
-        }
-      });
-    }
+  getStatusLabel(status: Collecte['statut']): string {
+    const statusMap: Record<Collecte['statut'], string> = {
+      'EN_ATTENTE': 'En attente',
+      'OCCUPEE': 'Occupée',
+      'EN_COURS': 'En cours',
+      'VALIDEE': 'Validée',
+      'REJETEE': 'Rejetée'
+    };
+    return statusMap[status];
   }
 
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'EN_ATTENTE':
-        return 'bg-yellow-100 text-yellow-700';
-      case 'EN_COURS':
-        return 'bg-blue-100 text-blue-700';
-      case 'VALIDEE':
-        return 'bg-green-100 text-green-700';
-      case 'REJETEE':
-        return 'bg-red-100 text-red-700';
-      case 'OCCUPEE':
-        return 'bg-purple-100 text-purple-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
+  getStatusClass(status: Collecte['statut']): string {
+    const statusClassMap: Record<Collecte['statut'], string> = {
+      'EN_ATTENTE': 'bg-yellow-100 text-yellow-800',
+      'OCCUPEE': 'bg-blue-100 text-blue-800',
+      'EN_COURS': 'bg-blue-100 text-blue-800',
+      'VALIDEE': 'bg-green-100 text-green-800',
+      'REJETEE': 'bg-red-100 text-red-800'
+    };
+    return statusClassMap[status];
   }
 
-  getStatusLabel(status: string): string {
-    switch (status) {
-      case 'EN_ATTENTE': return 'En attente';
-      case 'OCCUPEE': return 'Occupée';
-      case 'EN_COURS': return 'En cours';
-      case 'VALIDEE': return 'Validée';
-      case 'REJETEE': return 'Rejetée';
-      default: return status;
-    }
-  }
-
-  onLogout() {
-    this.store.dispatch(AuthActions.logout());
-    this.router.navigate(['/login']);
-  }
-
-  onStatusChange(event: Event, collecteId: string) {
-    const select = event.target as HTMLSelectElement;
-    const newStatus = select.value as 'EN_ATTENTE' | 'OCCUPEE' | 'EN_COURS' | 'VALIDEE' | 'REJETEE';
-    this.updateCollecteStatus(collecteId, newStatus);
+  handleImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    console.error(`Failed to load image: ${img.src}`);
+    img.style.display = 'none';
   }
 }
