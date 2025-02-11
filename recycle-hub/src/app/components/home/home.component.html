@@ -13,14 +13,65 @@
 
 <div *ngIf="!loading" class="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-100 py-8">
   <div class="container mx-auto px-4">
-    <!-- En-tête -->
+    <!-- En-tête avec Points et Bons d'achat -->
     <div class="text-center mb-8">
       <h1 class="text-4xl font-bold text-gray-900 mb-4">
         {{ isAdmin ? 'Gestion des collectes' : 'Mes collectes' }}
       </h1>
-      <p class="text-lg text-gray-600">
+      <p class="text-lg text-gray-600 mb-6">
         {{ isAdmin ? 'Gérez toutes les demandes de collecte' : 'Gérez vos demandes de collecte de déchets' }}
       </p>
+
+      <!-- Points et Bons d'achat -->
+      <div *ngIf="!isAdmin" class="bg-white rounded-xl shadow-lg p-6 max-w-2xl mx-auto">
+        <div class="grid grid-cols-2 gap-6">
+          <!-- Points -->
+          <div class="text-center p-4 bg-gray-900 rounded-lg">
+            <h3 class="text-lg font-semibold text-white mb-2">Mes Points</h3>
+            <div class="text-3xl font-bold text-white">{{ getTotalPoints() }}</div>
+            <div class="text-sm text-gray-300 mt-2">
+              <div>Plastique : {{ getPointsByType('PLASTIQUE') }} pts (2pts/kg)</div>
+              <div>Verre : {{ getPointsByType('VERRE') }} pts (1pt/kg)</div>
+              <div>Papier : {{ getPointsByType('PAPIER') }} pts (1pt/kg)</div>
+              <div>Métal : {{ getPointsByType('METAL') }} pts (5pts/kg)</div>
+            </div>
+          </div>
+
+          <!-- Bons d'achat disponibles -->
+          <div class="text-center p-4 bg-gray-800 rounded-lg">
+            <h3 class="text-lg font-semibold text-white mb-2">Bons d'achat disponibles</h3>
+            <div class="space-y-2">
+              <button class="w-full py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
+                      [class.bg-gray-900]="getTotalPoints() >= 100"
+                      [class.text-white]="getTotalPoints() >= 100"
+                      [class.bg-gray-600]="getTotalPoints() < 100"
+                      [class.text-gray-400]="getTotalPoints() < 100"
+                      [disabled]="getTotalPoints() < 100"
+                      (click)="convertPoints(100)">
+                100 pts = 50 Dh
+              </button>
+              <button class="w-full py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
+                      [class.bg-gray-900]="getTotalPoints() >= 200"
+                      [class.text-white]="getTotalPoints() >= 200"
+                      [class.bg-gray-600]="getTotalPoints() < 200"
+                      [class.text-gray-400]="getTotalPoints() < 200"
+                      [disabled]="getTotalPoints() < 200"
+                      (click)="convertPoints(200)">
+                200 pts = 120 Dh
+              </button>
+              <button class="w-full py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
+                      [class.bg-gray-900]="getTotalPoints() >= 500"
+                      [class.text-white]="getTotalPoints() >= 500"
+                      [class.bg-gray-600]="getTotalPoints() < 500"
+                      [class.text-gray-400]="getTotalPoints() < 500"
+                      [disabled]="getTotalPoints() < 500"
+                      (click)="convertPoints(500)">
+                500 pts = 350 Dh
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Bouton Nouvelle Collecte (uniquement pour les utilisateurs) -->

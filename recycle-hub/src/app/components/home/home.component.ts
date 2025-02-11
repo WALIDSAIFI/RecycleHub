@@ -21,6 +21,14 @@ export class HomeComponent implements OnInit {
   error: string | null = null;
   currentUserId: string | null = null;
 
+  // Points par type de déchet
+  private readonly POINTS_PAR_TYPE = {
+    'PLASTIQUE': 2,
+    'VERRE': 1,
+    'PAPIER': 1,
+    'METAL': 5
+  };
+
   constructor(
     private collecteService: CollecteService,
     private authService: AuthService,
@@ -144,5 +152,64 @@ export class HomeComponent implements OnInit {
     const img = event.target as HTMLImageElement;
     console.error(`Failed to load image: ${img.src}`);
     img.style.display = 'none';
+  }
+
+  // Calcule le total des points pour toutes les collectes validées
+  getTotalPoints(): number {
+    return this.collectes
+      .filter(c => c.statut === 'VALIDEE')
+      .reduce((total, collecte) => {
+        return total + this.calculateCollectePoints(collecte);
+      }, 0);
+  }
+
+  // Calcule les points pour un type spécifique de déchet
+  getPointsByType(type: 'PLASTIQUE' | 'VERRE' | 'PAPIER' | 'METAL'): number {
+    return this.collectes
+      .filter(c => c.statut === 'VALIDEE')
+      .reduce((total, collecte) => {
+        const dechet = collecte.dechets.find(d => d.type === type);
+        if (dechet) {
+          return total + (dechet.poids / 1000) * this.POINTS_PAR_TYPE[type];
+        }
+        return total;
+      }, 0);
+  }
+
+  // Calcule les points pour une collecte spécifique
+  private calculateCollectePoints(collecte: Collecte): number {
+    return collecte.dechets.reduce((total, dechet) => {
+      return total + (dechet.poids / 1000) * this.POINTS_PAR_TYPE[dechet.type];
+    }, 0);
+  }
+
+  // Convertit les points en bons d'achat
+  convertPoints(points: number): void {
+    const totalPoints = this.getTotalPoints();
+    if (totalPoints < points) {
+      this.error = 'Points insuffisants pour cette conversion';
+      return;
+    }
+
+    let montant = 0;
+    switch (points) {
+      case 100:
+        montant = 50;
+        break;
+      case 200:
+        montant = 120;
+        break;
+      case 500:
+        montant = 350;
+        break;
+      default:
+        this.error = 'Montant de conversion invalide';
+        return;
+    }
+
+    // TODO: Implémenter la logique de conversion avec le service approprié
+    console.log(`Conversion de ${points} points en bon d'achat de ${montant} Dh`);
+    // Afficher un message de succès
+    alert(`Félicitations ! Vous avez converti ${points} points en un bon d'achat de ${montant} Dh`);
   }
 }
