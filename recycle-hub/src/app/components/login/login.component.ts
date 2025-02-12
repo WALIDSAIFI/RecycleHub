@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -20,6 +20,8 @@ export class LoginComponent {
   showPassword = false;
   formSubmitted = false;
 
+ 
+
   constructor(
     private fb: FormBuilder,
     private store: Store,
@@ -31,6 +33,7 @@ export class LoginComponent {
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
+
 
   // Getters pour la validation des champs
   get emailControl() {

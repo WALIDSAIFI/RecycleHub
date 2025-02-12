@@ -9,7 +9,7 @@ import { User } from '../../models/user.model';
 
 @Injectable()
 export class AuthEffects {
-  login$ = createEffect(() =>
+  login$ = createEffect(() => 
     this.actions$.pipe(
       ofType(AuthActions.login),
       mergeMap(({ email, password }) =>
